@@ -18,6 +18,49 @@ export type RoutineProfileData = {
   notes: string;
 };
 
+type RoutineProfileRow = {
+  breakfast_time: string | null;
+  lunch_time: string | null;
+  snack_time: string | null;
+  dinner_time: string | null;
+  breakfast_usual: string | null;
+  lunch_usual: string | null;
+  snack_usual: string | null;
+  dinner_usual: string | null;
+  water_ml: number | null;
+  trains: boolean;
+  sports: string[];
+  training_frequency: string | null;
+  training_period: string | null;
+  busy_periods: string[];
+  little_time_to_cook: boolean;
+  routine_notes: string | null;
+  completed: boolean;
+};
+
+type RoutineProfileInsert = Partial<RoutineProfileRow> & {
+  user_id: string;
+  completed_at?: string;
+  updated_at: string;
+};
+
+type RoutineProfileClient = {
+  from: (table: "user_routine_profile") => {
+    select: (columns: string) => {
+      eq: (column: "user_id", value: string) => {
+        maybeSingle: () => Promise<{ data: RoutineProfileRow | null; error: Error | null }>;
+      };
+    };
+    upsert: (
+      values: RoutineProfileInsert,
+      options: { onConflict: "user_id" }
+    ) => Promise<{ error: Error | null }>;
+  };
+};
+
+// This table is newer than the generated database types bundled with the client.
+const routineProfileClient = supabase as unknown as RoutineProfileClient;
+
 export const emptyRoutineProfile: RoutineProfileData = {
   mealTimes: { cafe: "", almoco: "", lanche: "", jantar: "" },
   usualMeals: { cafe: "", almoco: "", lanche: "", jantar: "" },
@@ -40,10 +83,11 @@ export const useRoutineProfile = () => {
     staleTime: 60_000,
     retry: 1,
     queryFn: async () => {
-      const { data, error } = await supabase
+      if (!user) return null;
+      const { data, error } = await routineProfileClient
         .from("user_routine_profile")
         .select("*")
-        .eq("user_id", user!.id)
+        .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
@@ -86,7 +130,7 @@ export const usePersistRoutineProfile = () => {
 
       const waterMl = p.waterMl.trim() ? Math.round(Number(p.waterMl.replace(",", "."))) : null;
 
-      const { error } = await supabase.from("user_routine_profile").upsert(
+      const { error } = await routineProfileClient.from("user_routine_profile").upsert(
         {
           user_id: user.id,
           breakfast_time: p.mealTimes.cafe || null,
