@@ -16,6 +16,8 @@ dist-ssr
 # e PRECISA ser versionado para o build publicado funcionar.
 .env.local
 .env.*.local
+# .env.test aponta para um projeto Supabase de teste — nunca deve ser versionado.
+.env.test
 
 # Editor directories and files
 .vscode/*
@@ -38,3 +40,7 @@ ios/App/App/public
 
 # TypeScript incremental build info
 *.tsbuildinfo
+
+# Saída de testes locais (E2E, PDFs de exemplo) — nunca deve ir pro repositório.
+e2e-report/
+pdf-preview/

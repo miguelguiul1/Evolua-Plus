@@ -19,6 +19,22 @@ const normalizeObjective = (raw?: string | null): string | null => {
   return "maintenance";
 };
 
+/** Substituição determinística usada SOMENTE quando MOCK_AI=true (ambiente de teste). */
+const buildMockSwapContent = (refeicao: Record<string, unknown>): string => {
+  const tipo = typeof refeicao?.tipo === "string" ? refeicao.tipo : "Refeição";
+  return JSON.stringify({
+    tipo,
+    nome: "Opção alternativa de teste (mock)",
+    calorias: 450,
+    proteina: 30,
+    carb: 40,
+    gordura: 12,
+    ingredientes: ["ingrediente X (mock)", "ingrediente Y (mock)"],
+    preparo: "Preparo resumido de teste (mock).",
+    motivo_troca: "Sugestão gerada em modo mock para testes automatizados.",
+  });
+};
+
 /** Refeição enviada pelo cliente é DADO de contexto — sanitizada antes do prompt. */
 const sanitizeRefeicao = (r: Record<string, unknown>) => ({
   tipo: clampText(r?.tipo, 40),
@@ -49,8 +65,10 @@ serve(async (req) => {
       });
     }
 
+    // MOCK_AI é usado exclusivamente no ambiente de teste (nunca configurado em produção).
+    const MOCK_AI = Deno.env.get("MOCK_AI") === "true";
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurado");
+    if (!MOCK_AI && !LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurado");
 
     // Contexto vem SEMPRE do banco (perfil + metas + preferências + memória), via JWT/RLS.
     const ctx = await loadUserContext(req, auth.userId);
@@ -99,39 +117,46 @@ Regras:
 - SOMENTE o JSON.
 ${ctxLines.length ? `\nCONTEXTO:\n${ctxLines.join("\n")}` : ""}`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Refeição atual: ${JSON.stringify(sanitizeRefeicao(refeicao))}` },
-        ],
-        max_tokens: 1200,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Muitas requisições. Aguarde alguns segundos." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos de IA esgotados." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(JSON.stringify({ error: "Erro ao gerar substituição" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    let rawContent: string;
+    if (MOCK_AI) {
+      rawContent = buildMockSwapContent(refeicao);
+    } else {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: `Refeição atual: ${JSON.stringify(sanitizeRefeicao(refeicao))}` },
+          ],
+          max_tokens: 1200,
+        }),
       });
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          return new Response(JSON.stringify({ error: "Muitas requisições. Aguarde alguns segundos." }), {
+            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (response.status === 402) {
+          return new Response(JSON.stringify({ error: "Créditos de IA esgotados." }), {
+            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const t = await response.text();
+        console.error("AI gateway error:", response.status, t);
+        return new Response(JSON.stringify({ error: "Erro ao gerar substituição" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const data = await response.json();
+      rawContent = data.choices?.[0]?.message?.content ?? "";
     }
 
-    const data = await response.json();
-    const raw = (data.choices?.[0]?.message?.content ?? "").replace(/```json|```/gi, "").trim();
+    const raw = rawContent.replace(/```json|```/gi, "").trim();
     const start = raw.indexOf("{");
     const end = raw.lastIndexOf("}");
     let parsed;
