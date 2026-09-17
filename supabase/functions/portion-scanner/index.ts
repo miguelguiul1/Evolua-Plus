@@ -13,7 +13,7 @@ serve(async (req) => {
   try {
     const body = await readJson(req);
     if (isResponse(body)) return body;
-    const { imageBase64 } = body as Record<string, unknown> as any;
+    const { imageBase64 } = body as Record<string, unknown>;
     const badImage = validateImage(imageBase64);
     if (badImage) return badImage;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");

@@ -83,11 +83,12 @@ const Scanner = () => {
           result: data,
         });
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("Erro na análise:", e);
+      const message = e instanceof Error ? e.message : undefined;
       toast({
         title: "Erro na análise",
-        description: e.message || "Não foi possível analisar a imagem. Tente novamente.",
+        description: message || "Não foi possível analisar a imagem. Tente novamente.",
         variant: "destructive",
       });
     } finally {

@@ -14,7 +14,7 @@ serve(async (req) => {
   try {
     const body = await readJson(req);
     if (isResponse(body)) return body;
-    const { action, foodName: rawFood, quantity: rawQty, dailyLog } = body as Record<string, unknown> as any;
+    const { action, foodName: rawFood, quantity: rawQty, dailyLog } = body as Record<string, unknown>;
     if (action !== "estimate" && action !== "analyze") return json({ error: "Ação inválida." }, 400);
     const foodName = typeof rawFood === "string" ? rawFood.slice(0, 200) : "";
     const quantity = typeof rawQty === "string" ? rawQty.slice(0, 100) : "";

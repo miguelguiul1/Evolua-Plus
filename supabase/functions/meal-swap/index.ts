@@ -40,9 +40,10 @@ serve(async (req) => {
   try {
     const body = await readJson(req);
     if (isResponse(body)) return body;
-    const { refeicao, motivo: rawMotivo } = body as Record<string, unknown> as any;
+    const { refeicao: rawRefeicao, motivo: rawMotivo } = body as Record<string, unknown>;
     const motivo = typeof rawMotivo === "string" ? rawMotivo.slice(0, 400) : "";
-    if (!refeicao?.nome) {
+    const refeicao = rawRefeicao as Record<string, unknown> | undefined;
+    if (!refeicao || !refeicao.nome) {
       return new Response(JSON.stringify({ error: "Refeição inválida" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

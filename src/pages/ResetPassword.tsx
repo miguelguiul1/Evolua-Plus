@@ -69,15 +69,16 @@ const ResetPassword = () => {
       if (error) throw error;
       toast({ title: "Senha atualizada com sucesso! 🎉" });
       navigate("/dashboard", { replace: true });
-    } catch (error: any) {
-      const m = String(error?.message ?? "").toLowerCase();
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : undefined;
+      const m = String(errorMessage ?? "").toLowerCase();
       const desc = m.includes("session missing") || m.includes("jwt") || m.includes("expired")
         ? "Link inválido ou expirado. Peça um novo link de redefinição."
         : m.includes("should be at least")
         ? "A senha precisa ter pelo menos 6 caracteres."
         : m.includes("pwned") || m.includes("compromised")
         ? "Essa senha apareceu em vazamentos. Escolha outra mais segura."
-        : error?.message || "Não foi possível atualizar a senha.";
+        : errorMessage || "Não foi possível atualizar a senha.";
       toast({ title: "Erro", description: desc, variant: "destructive" });
     } finally {
       setLoading(false);

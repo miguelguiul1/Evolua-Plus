@@ -116,10 +116,11 @@ const Auth = () => {
           description: "Verifique seu email para confirmar o cadastro.",
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "";
       toast({
         title: "Erro",
-        description: traduzErro(error?.message ?? ""),
+        description: traduzErro(message),
         variant: "destructive",
       });
     } finally {

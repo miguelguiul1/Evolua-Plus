@@ -134,8 +134,9 @@ const FoodScanner = () => {
       if (user) {
         await supabase.from("scan_history").insert({ user_id: user.id, result: data });
       }
-    } catch (e: any) {
-      toast({ title: "Erro na análise", description: e.message || "Tente novamente.", variant: "destructive" });
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : undefined;
+      toast({ title: "Erro na análise", description: message || "Tente novamente.", variant: "destructive" });
     } finally {
       setAnalyzing(false);
     }

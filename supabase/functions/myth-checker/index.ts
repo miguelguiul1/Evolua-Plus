@@ -13,7 +13,7 @@ serve(async (req) => {
   try {
     const body = await readJson(req);
     if (isResponse(body)) return body;
-    const { question: rawQuestion } = body as Record<string, unknown> as any;
+    const { question: rawQuestion } = body as Record<string, unknown>;
     const question = typeof rawQuestion === "string" ? rawQuestion.slice(0, 500) : "";
     if (!question || typeof question !== "string" || question.trim().length < 3) {
       return new Response(JSON.stringify({ error: "Pergunta inválida" }), {

@@ -31,8 +31,9 @@ const MythChecker = () => {
       if (data?.error) throw new Error(data.error);
 
       setResult(data);
-    } catch (err: any) {
-      let msg = err?.message || "Erro ao verificar. Tente novamente.";
+    } catch (err: unknown) {
+      const baseMessage = err instanceof Error ? err.message : undefined;
+      let msg = baseMessage || "Erro ao verificar. Tente novamente.";
       if (err instanceof FunctionsHttpError) {
         try {
           const body = await err.context.json();

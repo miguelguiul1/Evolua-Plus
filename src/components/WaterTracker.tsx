@@ -40,7 +40,7 @@ const WaterTracker = ({ compact = false }: Props) => {
         supabase.from("user_goals").select("water_goal_ml").eq("user_id", user.id).maybeSingle(),
       ]);
       if (logsErr || goalsErr) throw logsErr || goalsErr;
-      setTotal((logs || []).reduce((s, r: any) => s + (r.amount_ml || 0), 0));
+      setTotal((logs || []).reduce((s, r) => s + (r.amount_ml || 0), 0));
       if (goals?.water_goal_ml) setGoal(goals.water_goal_ml);
     } catch {
       setLoadError(true);
