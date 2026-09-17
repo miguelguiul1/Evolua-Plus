@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, Lightbulb, RefreshCw, ChevronDown, ChevronUp, FileDown, Plus, Shuffle, AlertTriangle, Target } from "lucide-react";
+import { Calendar, Lightbulb, RefreshCw, ChevronDown, ChevronUp, FileDown, Plus, Shuffle, AlertTriangle, Target, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { FunctionsHttpError } from "@supabase/supabase-js";
@@ -10,6 +10,7 @@ import MotivationalQuote from "@/components/MotivationalQuote";
 import SmartShoppingList from "@/components/plano/SmartShoppingList";
 import { exportPdfCompat } from "@/lib/pdfExport";
 import { todayISO, usePreferences } from "@/hooks/useNutrition";
+import { useRoutineProfile } from "@/hooks/useRoutineProfile";
 import { normalizeObjective, objectiveOption } from "@/lib/objectives";
 import { loadStoredPlano, saveStoredPlano } from "@/lib/planoStorage";
 
@@ -77,6 +78,10 @@ const PlanoSemanal = () => {
   const { data: prefsData, isLoading: prefsLoading } = usePreferences();
   const objective = normalizeObjective(prefsData?.objective);
   const objectiveInfo = objectiveOption(objective);
+
+  // Onboarding avançado opcional — só aparece pra quem quiser mais personalização.
+  const { data: routineProfile } = useRoutineProfile();
+  const hasRoutineProfile = !!routineProfile?.completed;
 
   // Restaura o último plano gerado do Supabase (com fallback para localStorage antigo).
   useEffect(() => {
@@ -319,6 +324,21 @@ const PlanoSemanal = () => {
                 <><Calendar className="w-5 h-5" /> Gerar plano com IA</>
               )}
             </Button>
+
+            {/* Onboarding avançado opcional — nunca obrigatório para gerar o plano padrão */}
+            <div className="pt-1">
+              <Button asChild variant="outline" className="gap-2">
+                <Link to="/plano-personalizado">
+                  <Sparkles className="w-4 h-4" />
+                  {hasRoutineProfile ? "Editar rotina personalizada" : "Criar um plano feito sob medida pra minha rotina"}
+                </Link>
+              </Button>
+              {hasRoutineProfile && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  ✓ Sua rotina está configurada — o próximo plano gerado vai considerá-la.
+                </p>
+              )}
+            </div>
 
             {/* Progresso indeterminado e honesto — nenhuma porcentagem simulada */}
             {generating && (

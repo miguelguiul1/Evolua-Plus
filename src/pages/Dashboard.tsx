@@ -133,6 +133,12 @@ const Dashboard = () => {
                 <Link to="/plano-semanal">Ver meu plano de hoje</Link>
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground mt-4">
+              Quer um plano ainda mais preciso?{" "}
+              <Link to="/plano-personalizado" className="text-primary font-medium hover:underline">
+                Conte sua rotina pra IA
+              </Link>
+            </p>
           </section>
         ) : (
           <section className="bg-gradient-to-br from-primary/15 via-card to-accent/10 rounded-2xl border border-primary/25 shadow-soft p-6 sm:p-8 mb-6">

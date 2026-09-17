@@ -34,6 +34,7 @@ const Favoritos = lazy(() => import("./pages/Favoritos"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const MemoriaIA = lazy(() => import("./pages/MemoriaIA"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const PlanoPersonalizado = lazy(() => import("./pages/PlanoPersonalizado"));
 
 
 const queryClient = new QueryClient({
@@ -55,6 +56,7 @@ const routeTitles: Record<string, string> = {
   "/biblioteca": "Biblioteca de alimentos — Evolua Plus",
   "/historico": "Histórico — Evolua Plus",
   "/plano-semanal": "Plano semanal — Evolua Plus",
+  "/plano-personalizado": "Plano personalizado — Evolua Plus",
   "/diario": "Diário alimentar — Evolua Plus",
   "/assistente": "Assistente IA — Evolua Plus",
   "/memoria-ia": "Memória da IA — Evolua Plus",
@@ -122,6 +124,7 @@ const App = () => (
                   <Route path="/biblioteca" element={<P><Biblioteca /></P>} />
                   <Route path="/historico" element={<P><Historico /></P>} />
                   <Route path="/plano-semanal" element={<P><PlanoSemanal /></P>} />
+                  <Route path="/plano-personalizado" element={<P><PlanoPersonalizado /></P>} />
                   <Route path="/diario" element={<P><DiarioAlimentar /></P>} />
                   <Route path="/assistente" element={<P><AssistenteIA /></P>} />
                   <Route path="/memoria-ia" element={<P><MemoriaIA /></P>} />

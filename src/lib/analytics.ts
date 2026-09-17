@@ -11,7 +11,9 @@ export type ActivationEvent =
   | "onboarding_completed"
   | "plan_generation_started"
   | "plan_generation_completed"
-  | "first_food_logged";
+  | "first_food_logged"
+  | "routine_profile_started"
+  | "routine_profile_completed";
 
 export const track = (event: ActivationEvent, payload: Record<string, unknown> = {}) => {
   try {

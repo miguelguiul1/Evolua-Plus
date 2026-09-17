@@ -33,6 +33,7 @@ const cleanList = (value: unknown): string[] =>
   Array.isArray(value)
     ? value
         .filter((v): v is string => typeof v === "string")
+        // eslint-disable-next-line no-control-regex -- remove intencionalmente caracteres de controle do input do usuário
         .map((v) => v.replace(/[\x00-\x1F\x7F]/g, " ").trim().slice(0, 60))
         .filter(Boolean)
         .slice(0, MAX_ITEMS)
@@ -43,6 +44,33 @@ const numOrNull = (v: unknown): number | null => {
   return typeof n === "number" && Number.isFinite(n) ? n : null;
 };
 
+/** Texto curto vindo do banco: some se não for string, sempre tratado como DADO. */
+const cleanText = (value: unknown, max = 300): string | null => {
+  if (typeof value !== "string") return null;
+  // eslint-disable-next-line no-control-regex -- remove intencionalmente caracteres de controle do input do usuário
+  const t = value.replace(/[\x00-\x1F\x7F]/g, " ").trim().slice(0, max);
+  return t || null;
+};
+
+/** Horário no formato HH:MM — descarta qualquer outro valor em vez de repassar lixo pro prompt. */
+const cleanTime = (value: unknown): string | null => {
+  if (typeof value !== "string") return null;
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(value) ? value : null;
+};
+
+/** Cria um client Supabase autenticado com o token do chamador (RLS ativa). */
+function createUserScopedClient(req: Request) {
+  const authHeader = req.headers.get("Authorization") ?? "";
+  return createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: authHeader } },
+    },
+  );
+}
+
 /**
  * Cria um client Supabase autenticado com o token do chamador e carrega
  * perfil, metas, preferências e último peso. Tudo filtrado por RLS.
@@ -51,15 +79,7 @@ export async function loadUserContext(
   req: Request,
   userId: string,
 ): Promise<UserContext | Response> {
-  const authHeader = req.headers.get("Authorization") ?? "";
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    {
-      auth: { persistSession: false, autoRefreshToken: false },
-      global: { headers: { Authorization: authHeader } },
-    },
-  );
+  const supabase = createUserScopedClient(req);
 
   try {
     const [{ data: profile }, { data: prefs }, { data: goals }, { data: weight }] = await Promise.all([
@@ -132,3 +152,71 @@ export const insufficientData = () =>
     },
     400,
   );
+
+export type RoutineProfile = {
+  mealTimes: {
+    cafe: string | null;
+    almoco: string | null;
+    lanche: string | null;
+    jantar: string | null;
+  };
+  usualMeals: {
+    cafe: string | null;
+    almoco: string | null;
+    lanche: string | null;
+    jantar: string | null;
+  };
+  waterMl: number | null;
+  trains: boolean;
+  sports: string[];
+  trainingFrequency: string | null;
+  trainingPeriod: string | null;
+  busyPeriods: string[];
+  littleTimeToCook: boolean;
+  notes: string | null;
+};
+
+/**
+ * Carrega o perfil de rotina opcional (onboarding avançado sob demanda).
+ * NUNCA bloqueia a geração do plano: em qualquer falha ou ausência de dados,
+ * retorna null e o chamador segue com o fluxo padrão sem essas informações.
+ */
+export async function loadRoutineProfile(req: Request, userId: string): Promise<RoutineProfile | null> {
+  try {
+    const supabase = createUserScopedClient(req);
+    const { data, error } = await supabase
+      .from("user_routine_profile")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("completed", true)
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    return {
+      mealTimes: {
+        cafe: cleanTime(data.breakfast_time),
+        almoco: cleanTime(data.lunch_time),
+        lanche: cleanTime(data.snack_time),
+        jantar: cleanTime(data.dinner_time),
+      },
+      usualMeals: {
+        cafe: cleanText(data.breakfast_usual, 200),
+        almoco: cleanText(data.lunch_usual, 200),
+        lanche: cleanText(data.snack_usual, 200),
+        jantar: cleanText(data.dinner_usual, 200),
+      },
+      waterMl: numOrNull(data.water_ml),
+      trains: !!data.trains,
+      sports: cleanList(data.sports),
+      trainingFrequency: cleanText(data.training_frequency, 60),
+      trainingPeriod: cleanText(data.training_period, 30),
+      busyPeriods: cleanList(data.busy_periods),
+      littleTimeToCook: !!data.little_time_to_cook,
+      notes: cleanText(data.routine_notes, 500),
+    };
+  } catch (e) {
+    console.error("Falha ao carregar perfil de rotina (opcional):", e);
+    return null;
+  }
+}
