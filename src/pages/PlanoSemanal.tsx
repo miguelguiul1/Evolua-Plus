@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, Lightbulb, RefreshCw, ChevronDown, ChevronUp, FileDown, Plus, Shuffle, AlertTriangle, Target, Sparkles } from "lucide-react";
+import { Calendar, Lightbulb, RefreshCw, ChevronDown, ChevronUp, FileDown, Plus, Shuffle, AlertTriangle, Target, Sparkles, Dumbbell, Droplets, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { FunctionsHttpError } from "@supabase/supabase-js";
@@ -9,13 +9,12 @@ import { Link } from "react-router-dom";
 import MotivationalQuote from "@/components/MotivationalQuote";
 import SmartShoppingList from "@/components/plano/SmartShoppingList";
 import { exportPdfCompat } from "@/lib/pdfExport";
-import { todayISO, usePreferences } from "@/hooks/useNutrition";
+import { todayISO, useGoals, usePreferences } from "@/hooks/useNutrition";
 import { useRoutineProfile } from "@/hooks/useRoutineProfile";
 import { normalizeObjective, objectiveOption } from "@/lib/objectives";
 import { loadStoredPlano, saveStoredPlano } from "@/lib/planoStorage";
 
-interface Refeicao {
-  tipo: string;
+interface OpcaoRefeicao {
   nome: string;
   calorias: number;
   proteina: number;
@@ -25,9 +24,22 @@ interface Refeicao {
   preparo: string;
 }
 
+interface Refeicao extends OpcaoRefeicao {
+  tipo: string;
+  /** 1-3 opções equivalentes; a primeira é sempre a principal/recomendada. */
+  opcoes?: OpcaoRefeicao[];
+}
+
 interface DiaPlano {
   dia: string;
   refeicoes: Refeicao[];
+}
+
+/** Sugestões alimentares em torno do treino — só existe quando o usuário treina (nunca fármacos/doses de suplemento). */
+interface Suplementacao {
+  pre_treino?: string | null;
+  intra_treino?: string | null;
+  pos_treino?: string | null;
 }
 
 interface PlanoSemanal {
@@ -36,7 +48,18 @@ interface PlanoSemanal {
   lista_compras: string[];
   custo_estimado: string;
   dicas: string[];
+  suplementacao?: Suplementacao | null;
 }
+
+/** Distribuição sugerida da meta de água ao longo do dia — cálculo local, sem IA nem coluna nova. */
+const WATER_SPLIT: { key: "manha" | "tarde" | "noite"; label: string; ratio: number }[] = [
+  { key: "manha", label: "Manhã", ratio: 0.3 },
+  { key: "tarde", label: "Tarde", ratio: 0.3 },
+  { key: "noite", label: "Noite", ratio: 0.4 },
+];
+
+const splitWater = (totalMl: number) =>
+  WATER_SPLIT.map((s) => ({ ...s, ml: Math.round((totalMl * s.ratio) / 50) * 50 }));
 
 /** Estágios honestos de preparação — sem porcentagem simulada. */
 const GERACAO_STAGES = [
@@ -82,6 +105,10 @@ const PlanoSemanal = () => {
   // Onboarding avançado opcional — só aparece pra quem quiser mais personalização.
   const { data: routineProfile } = useRoutineProfile();
   const hasRoutineProfile = !!routineProfile?.completed;
+
+  // Hidratação fracionada: mesma meta diária já salva, só dividida visualmente por período.
+  const { data: goalsData } = useGoals();
+  const waterSplit = splitWater(goalsData?.water_goal_ml ?? 2500);
 
   // Restaura o último plano gerado do Supabase (com fallback para localStorage antigo).
   useEffect(() => {
@@ -218,20 +245,64 @@ const PlanoSemanal = () => {
 
   const exportPdf = async () => {
     if (!plano) return;
+    const sup = plano.suplementacao;
+    const hasSuplementacao = !!(sup && (sup.pre_treino || sup.intra_treino || sup.pos_treino));
+
     await exportPdfCompat({
       title: "Plano alimentar semanal",
-      subtitle: `Média diária: ${plano.resumo.calorias_media} kcal · ${plano.resumo.proteina_media}g proteína${plano.custo_estimado ? ` · Custo estimado: ${plano.custo_estimado}` : ""}`,
+      subtitle: plano.custo_estimado ? `Custo estimado: ${plano.custo_estimado}` : undefined,
       sections: [
+        {
+          kind: "summary",
+          title: "Resumo nutricional (média diária)",
+          rows: [
+            {
+              label: "Média diária",
+              calorias: plano.resumo.calorias_media,
+              proteina: plano.resumo.proteina_media,
+              carb: plano.resumo.carb_media,
+              gordura: plano.resumo.gordura_media,
+            },
+          ],
+        },
+        {
+          title: "Hidratação sugerida ao longo do dia",
+          lines: [
+            ...waterSplit.map((s) => `${s.label} (~${Math.round(s.ratio * 100)}%): ${s.ml} ml`),
+            `Total sugerido: ${waterSplit.reduce((sum, s) => sum + s.ml, 0)} ml/dia`,
+          ],
+        },
         ...plano.plano.map((dia) => ({
+          kind: "meals" as const,
           title: dia.dia,
-          lines: dia.refeicoes.map(
-            (r) => `${r.tipo}: ${r.nome} — ${r.calorias} kcal (P ${r.proteina}g · C ${r.carb}g · G ${r.gordura}g)`
-          ),
+          meals: dia.refeicoes.map((r) => ({
+            tipo: r.tipo,
+            nome: r.nome,
+            calorias: r.calorias,
+            proteina: r.proteina,
+            carb: r.carb,
+            gordura: r.gordura,
+            detalhe: r.ingredientes?.length ? `Ingredientes: ${r.ingredientes.join(", ")}` : undefined,
+            alternativas: r.opcoes?.slice(1).map((o) => ({ nome: o.nome, calorias: o.calorias })),
+          })),
         })),
-        ...(plano.lista_compras?.length
-          ? [{ title: "Lista de compras", lines: plano.lista_compras.map((i) => `• ${i}`) }]
+        ...(hasSuplementacao
+          ? [
+              {
+                kind: "supplement" as const,
+                title: "Suplementação para o treino",
+                preTreino: sup?.pre_treino ?? undefined,
+                intraTreino: sup?.intra_treino ?? undefined,
+                posTreino: sup?.pos_treino ?? undefined,
+              },
+            ]
           : []),
-        ...(plano.dicas?.length ? [{ title: "Dicas", lines: plano.dicas.map((d, i) => `${i + 1}. ${d}`) }] : []),
+        ...(plano.lista_compras?.length
+          ? [{ kind: "shopping" as const, title: "Lista de compras", items: plano.lista_compras }]
+          : []),
+        ...(plano.dicas?.length
+          ? [{ title: "Dicas da IA", lines: plano.dicas.map((d, i) => `${i + 1}. ${d}`) }]
+          : []),
       ],
       fileName: "evolua-plus-plano-semanal.pdf",
     });
@@ -380,6 +451,21 @@ const PlanoSemanal = () => {
                   💰 Custo estimado: <strong className="text-primary">{plano.custo_estimado}</strong>
                 </p>
               )}
+
+              {/* Hidratação fracionada — mesma meta diária já salva, só dividida visualmente por período */}
+              <div className="mt-4 pt-4 border-t border-border/60">
+                <p className="text-xs font-medium text-foreground mb-2 flex items-center gap-1.5">
+                  <Droplets className="w-3.5 h-3.5 text-primary" /> Hidratação sugerida ao longo do dia
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {waterSplit.map((s) => (
+                    <div key={s.key} className="bg-secondary/50 rounded-lg p-2 text-center">
+                      <p className="text-xs font-display font-bold text-foreground">{s.ml} ml</p>
+                      <p className="text-[10px] text-muted-foreground">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Days */}
@@ -451,6 +537,17 @@ const PlanoSemanal = () => {
                                   <p className="text-xs text-muted-foreground"><strong>Preparo:</strong> {ref.preparo}</p>
                                 </div>
                               )}
+                              {ref.opcoes && ref.opcoes.length > 1 && (
+                                <p className="text-xs text-muted-foreground/80 italic">
+                                  Ou troque por:{" "}
+                                  {ref.opcoes.slice(1).map((o, i, arr) => (
+                                    <span key={o.nome}>
+                                      {o.nome} ({o.calorias} kcal)
+                                      {i < arr.length - 1 ? "; " : ""}
+                                    </span>
+                                  ))}
+                                </p>
+                              )}
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -488,6 +585,39 @@ const PlanoSemanal = () => {
               onRegenerate={generatePlan}
               regenerating={generating}
             />
+
+            {/* Suplementação — só existe quando o usuário treina (onboarding avançado) */}
+            {plano.suplementacao && (plano.suplementacao.pre_treino || plano.suplementacao.intra_treino || plano.suplementacao.pos_treino) && (
+              <div className="bg-card rounded-2xl shadow-soft border border-accent/20 p-6">
+                <h2 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <Dumbbell className="w-5 h-5 text-accent" /> Suplementação para o treino
+                </h2>
+                <div className="space-y-3">
+                  {plano.suplementacao.pre_treino && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Pré-treino</p>
+                      <p className="text-sm text-foreground">{plano.suplementacao.pre_treino}</p>
+                    </div>
+                  )}
+                  {plano.suplementacao.intra_treino && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Intra-treino</p>
+                      <p className="text-sm text-foreground">{plano.suplementacao.intra_treino}</p>
+                    </div>
+                  )}
+                  {plano.suplementacao.pos_treino && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Pós-treino</p>
+                      <p className="text-sm text-foreground">{plano.suplementacao.pos_treino}</p>
+                    </div>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-4 pt-3 border-t border-border/60 inline-flex items-start gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  Sugestões educativas com alimentos comuns — não substitui acompanhamento de nutricionista ou médico.
+                </p>
+              </div>
+            )}
 
             {/* Tips */}
             {plano.dicas && plano.dicas.length > 0 && (
