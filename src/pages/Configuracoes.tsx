@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import ConfirmDialog from "@/components/ds/ConfirmDialog";
 import { useTheme, ThemeMode } from "@/hooks/useTheme";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { clearStoredPlano } from "@/lib/planoStorage";
 import { resolveAppUrl } from "@/lib/appUrl";

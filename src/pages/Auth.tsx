@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 import { resolveNext } from "@/lib/safeNext";
 import { resolveAppUrl } from "@/lib/appUrl";
 import { Button } from "@/components/ui/button";

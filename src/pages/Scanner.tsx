@@ -5,7 +5,7 @@ import { Camera, Upload, Zap, Apple, Flame, Lightbulb, RefreshCw } from "lucide-
 import MotivationalQuote from "@/components/MotivationalQuote";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 import FoodScanner from "@/components/FoodScanner";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import PortionScanner from "@/components/PortionScanner";

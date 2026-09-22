@@ -6,7 +6,7 @@ import {
 import { receitas } from "@/data/receitas";
 import { useGlobalFavorites, categoryLabels } from "@/hooks/useGlobalFavorites";
 import { useFavorites, useFoodLogRange, todayISO, toISODate } from "@/hooks/useNutrition";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 
 const pages = [
   { label: "Painel", to: "/dashboard" },

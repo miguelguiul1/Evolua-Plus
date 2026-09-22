@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Camera, Upload, RefreshCw, Flame, Beef, Wheat, Droplets, Plus, Utensils } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 import { useNavigate } from "react-router-dom";
 import { MEAL_TYPES, todayISO, useSyncModules } from "@/hooks/useNutrition";
 import { compressImage } from "@/lib/compressImage";

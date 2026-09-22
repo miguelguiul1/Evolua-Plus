@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Barcode, Camera, RefreshCw, Plus, AlertTriangle, Bookmark } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 import { useNavigate } from "react-router-dom";
 import { MEAL_TYPES, todayISO, useSyncModules } from "@/hooks/useNutrition";
 import { RANGES, checkRange, checkText, firstError, normalizeBarcode, parseNum } from "@/lib/validation";

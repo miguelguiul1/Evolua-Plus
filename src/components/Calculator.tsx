@@ -9,7 +9,7 @@ import { ACTIVITY_LEVELS, GLOSSARY, computeMetrics, type Metrics } from "@/lib/n
 import { SPORTS } from "@/data/preferencias";
 import { saveDraft } from "@/lib/onboardingDraft";
 import { track } from "@/lib/analytics";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 
 type FormData = {
   peso: string;

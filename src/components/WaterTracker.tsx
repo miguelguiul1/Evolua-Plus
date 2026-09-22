@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Droplet, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 import { toast } from "sonner";
 import { todayISO, useSyncModules } from "@/hooks/useNutrition";
 

@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, ScanLine, NotebookPen, Sparkles, TrendingUp } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 
 const tabs = [
   { to: "/dashboard", label: "Painel", icon: LayoutDashboard },

@@ -6,7 +6,7 @@ import {
   CalendarDays, Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 import { Button } from "@/components/ui/button";
 import WaterTracker from "@/components/WaterTracker";
 import MotivationalQuote from "@/components/MotivationalQuote";

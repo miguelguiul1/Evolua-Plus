@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar, Lightbulb, RefreshCw, ChevronDown, ChevronUp, FileDown, Plus, Shuffle, AlertTriangle, Target, Sparkles, Dumbbell, Droplets, ShieldCheck } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";

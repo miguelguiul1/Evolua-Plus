@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 
 type Item = { id: string; name: string; category: string; done: boolean };
 
-export const CATEGORIES = [
+const CATEGORIES = [
   { id: "proteinas", label: "Proteínas", emoji: "🍗" },
   { id: "carboidratos", label: "Carboidratos", emoji: "🍚" },
   { id: "frutas", label: "Frutas", emoji: "🍎" },
@@ -24,7 +24,7 @@ const RULES: [string, string[]][] = [
   ["bebidas", ["água", "suco", "café", "chá", "refrigerante", "bebida"]],
 ];
 
-export const categorize = (name: string) => {
+const categorize = (name: string) => {
   const n = name.toLowerCase();
   for (const [cat, words] of RULES) if (words.some((w) => n.includes(w))) return cat;
   return "temperos";

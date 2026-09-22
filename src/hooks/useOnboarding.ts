@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 import type { Objective } from "@/lib/objectives";
 import { normalizeObjective } from "@/lib/objectives";
 import type { Metrics } from "@/lib/nutritionCalc";
