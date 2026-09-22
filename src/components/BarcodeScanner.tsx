@@ -63,7 +63,6 @@ const BarcodeScanner = () => {
   useEffect(() => {
     setSupported(typeof window !== "undefined" && "BarcodeDetector" in window);
     return () => stopCamera();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const stopCamera = () => {

@@ -41,6 +41,7 @@ const Historico = () => {
     if (user) {
       loadScans();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `loadScans` só depende de `user` (já coberto) e `navigate` é estável entre renders; incluir `loadScans` recriaria o efeito a cada render.
   }, [user, loading]);
 
   const loadScans = async () => {

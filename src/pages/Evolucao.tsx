@@ -60,7 +60,10 @@ const Evolucao = () => {
     }
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [user]);
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `load` só depende de `user` (já coberto); incluí-la recriaria o efeito a cada render, pois sua identidade muda sempre.
+  }, [user]);
 
   const photosByLog = useMemo(() => {
     const map: Record<string, PhotoRow[]> = {};

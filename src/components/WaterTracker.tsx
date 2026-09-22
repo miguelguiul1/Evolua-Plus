@@ -49,7 +49,10 @@ const WaterTracker = ({ compact = false }: Props) => {
     }
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [user, retryKey]);
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `load` só depende de `user`/`today` (já cobertos); incluí-la recriaria o efeito a cada render, pois sua identidade muda sempre.
+  }, [user, retryKey]);
 
   const addWater = async (ml: number) => {
     if (!user) { toast.error("Faça login para registrar"); return; }

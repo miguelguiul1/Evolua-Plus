@@ -124,7 +124,10 @@ const AssistenteIA = () => {
     if (data?.length) setMessages(data as Msg[]);
   };
 
-  useEffect(() => { loadHistory(); /* eslint-disable-next-line */ }, [user]);
+  useEffect(() => {
+    loadHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `loadHistory` só depende de `user` (já coberto); incluí-la recarregaria o histórico a cada render (ex: a cada tecla digitada).
+  }, [user]);
 
   const send = async (text?: string) => {
     const content = (text ?? input).trim();
