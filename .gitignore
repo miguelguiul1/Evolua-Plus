@@ -44,3 +44,6 @@ ios/App/App/public
 # Saída de testes locais (E2E, PDFs de exemplo) — nunca deve ir pro repositório.
 e2e-report/
 pdf-preview/
+
+# Estado local do Supabase CLI (contém credenciais do banco local)
+supabase/.temp/
