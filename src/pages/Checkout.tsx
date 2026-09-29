@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -58,7 +60,13 @@ const Checkout = () => {
     }
     setPaymentUnavailable(false);
     setSubmitting(true);
-    window.open(KIRVANO_CHECKOUT_URL, "_blank", "noopener,noreferrer");
+    // No app nativo, window.open dentro da WebView local não é confiável para abrir
+    // um domínio de pagamento externo — usamos o navegador do sistema explicitamente.
+    if (Capacitor.isNativePlatform()) {
+      Browser.open({ url: KIRVANO_CHECKOUT_URL });
+    } else {
+      window.open(KIRVANO_CHECKOUT_URL, "_blank", "noopener,noreferrer");
+    }
     setTimeout(() => setSubmitting(false), 1500);
   };
 

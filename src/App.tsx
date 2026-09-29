@@ -37,6 +37,8 @@ const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const MemoriaIA = lazy(() => import("./pages/MemoriaIA"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const PlanoPersonalizado = lazy(() => import("./pages/PlanoPersonalizado"));
+const Privacidade = lazy(() => import("./pages/Privacidade"));
+const Termos = lazy(() => import("./pages/Termos"));
 
 
 const queryClient = new QueryClient({
@@ -67,6 +69,8 @@ const routeTitles: Record<string, string> = {
   "/insights": "Insights — Evolua Plus",
   "/favoritos": "Favoritos — Evolua Plus",
   "/configuracoes": "Ajustes — Evolua Plus",
+  "/privacidade": "Política de Privacidade — Evolua Plus",
+  "/termos": "Termos de Uso — Evolua Plus",
 };
 
 const PageTitle = () => {
@@ -117,6 +121,8 @@ const App = () => {
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/privacidade" element={<Privacidade />} />
+                  <Route path="/termos" element={<Termos />} />
                   <Route path="/" element={<Index />} />
                   <Route path="/index" element={<Navigate to="/" replace />} />
                   <Route path="/home" element={<Navigate to="/" replace />} />

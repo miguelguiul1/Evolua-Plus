@@ -56,9 +56,8 @@ const SiteFooter = () => (
       <div>
         <p className="font-display font-semibold text-sm text-foreground mb-3">Legal</p>
         <ul className="space-y-2 text-sm text-muted-foreground">
-          <li><a href="#" className="hover:text-primary transition-colors">Termos de uso</a></li>
-          <li><a href="#" className="hover:text-primary transition-colors">Política de privacidade</a></li>
-          <li><a href="#" className="hover:text-primary transition-colors">Cookies</a></li>
+          <li><Link to="/termos" className="hover:text-primary transition-colors">Termos de uso</Link></li>
+          <li><Link to="/privacidade" className="hover:text-primary transition-colors">Política de privacidade</Link></li>
         </ul>
       </div>
     </div>
