@@ -20,6 +20,15 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- Deep link de retorno do login nativo com Google (Supabase OAuth).
+                 Só é usado quando VITE_ENABLE_NATIVE_GOOGLE=true; ver GOOGLE_LOGIN_NATIVO.md. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.evoluaplus.app" android:host="login-callback" />
+            </intent-filter>
         </activity>
 
         <provider
