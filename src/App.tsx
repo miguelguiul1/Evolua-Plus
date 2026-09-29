@@ -11,6 +11,8 @@ import Index from "./pages/Index";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { RouteErrorBoundary } from "./components/RouteErrorBoundary";
 import { PageSkeleton } from "./components/ds/Skeletons";
+import OfflineScreen from "./components/OfflineScreen";
+import { useOnlineStatus } from "./hooks/useOnlineStatus";
 
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -87,12 +89,16 @@ const P = ({ children }: { children: React.ReactNode }) => (
   <ProtectedRoute>{children}</ProtectedRoute>
 );
 
-const App = () => (
+const App = () => {
+  const isOnline = useOnlineStatus();
+
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
         <Toaster />
         <Sonner />
+        {!isOnline && <OfflineScreen />}
         <BrowserRouter>
           <ScrollToTop />
           <PageTitle />
@@ -143,6 +149,7 @@ const App = () => (
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;

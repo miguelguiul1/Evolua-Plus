@@ -68,7 +68,8 @@ export default defineConfig(({ mode }) => {
           // Shell do app (HTML/JS/CSS/imagens/fonts do build): fica disponível offline após a 1ª visita.
           globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2}"],
           navigateFallback: "/index.html",
-          // Supabase (auth/rest/edge functions) nunca deve ser servido do cache.
+          // Supabase (auth/rest) e as Edge Functions de IA (food-scan, nutrition-chat, meal-plan etc.)
+          // nunca devem ser servidas do cache — sempre rede.
           // Precisa ser RegExp literal (não uma closure sobre `supabaseHost`): o workbox
           // serializa este valor como texto dentro do service worker, onde a variável
           // do vite.config.ts não existe.
@@ -76,6 +77,12 @@ export default defineConfig(({ mode }) => {
             ? [
                 {
                   urlPattern: new RegExp(`^https://${supabaseHost}/`),
+                  handler: "NetworkOnly",
+                },
+                {
+                  urlPattern: new RegExp(
+                    `^https://${supabaseHost.replace(".supabase.co", ".functions.supabase.co")}/`
+                  ),
                   handler: "NetworkOnly",
                 },
               ]
