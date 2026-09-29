@@ -13,6 +13,9 @@
     "ios": "cap open ios",
     "lint": "eslint .",
     "pwa:icons": "node scripts/generate-pwa-icons.mjs",
+    "capacitor:icons": "node scripts/generate-capacitor-assets.mjs && capacitor-assets generate",
+    "build:apk": "vite build && cap sync android && cd android && gradlew assembleRelease",
+    "build:aab": "vite build && cap sync android && cd android && gradlew bundleRelease",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -80,6 +83,7 @@
     "vaul": "^0.9.9"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.5.0",
     "@eslint/js": "^9.32.0",
     "@tailwindcss/typography": "^0.5.16",
