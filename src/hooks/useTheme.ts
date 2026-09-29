@@ -1,13 +1,22 @@
 import { useCallback, useEffect, useState } from "react";
+import { Capacitor } from "@capacitor/core";
+import { StatusBar, Style } from "@capacitor/status-bar";
 
 export type ThemeMode = "light" | "dark" | "system";
 const KEY = "evoluaTheme";
 
 const systemDark = () => window.matchMedia("(prefers-color-scheme: dark)").matches;
 
+const syncNativeStatusBar = (dark: boolean) => {
+  if (!Capacitor.isNativePlatform()) return;
+  StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light }).catch(() => {});
+  StatusBar.setBackgroundColor({ color: dark ? "#111B16" : "#F7F9F7" }).catch(() => {});
+};
+
 export const applyTheme = (mode: ThemeMode) => {
   const dark = mode === "dark" || (mode === "system" && systemDark());
   document.documentElement.classList.toggle("dark", dark);
+  syncNativeStatusBar(dark);
 };
 
 export const initTheme = () => {

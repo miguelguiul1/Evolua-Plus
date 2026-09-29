@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/useAuth";
@@ -295,7 +296,9 @@ const Auth = () => {
             </Button>
           </form>
 
-          {!isForgot && (
+          {/* Login com Google depende de um redirect web (não funciona dentro do app
+              nativo empacotado, cuja origem é local); some só no APK/AAB. */}
+          {!isForgot && !Capacitor.isNativePlatform() && (
             <>
               <div className="my-6 flex items-center gap-3">
                 <span className="h-px flex-1 bg-border" />
