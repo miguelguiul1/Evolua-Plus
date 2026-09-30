@@ -1,6 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse } from "../_shared/guard.ts";
 import { loadUserContext } from "../_shared/userContext.ts";
+import { buildForbiddenPromptLine, buildForbiddenTerms } from "../_shared/foodPreferences.ts";
+import { AIHttpError } from "../_shared/aiGuard.ts";
+import { runChatGuard } from "../_shared/recipeGuards.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -59,6 +62,16 @@ serve(async (req) => {
 
     if (p.length) ctx = `\n\nCONTEXTO REAL DO USUÁRIO (use ativamente, sem repetir tudo):\n- ${p.join("\n- ")}`;
 
+    // Não gosto + alergias: regra absoluta no prompt e checagem da resposta (1 regeneração).
+    const forbiddenTerms = buildForbiddenTerms(
+      userCtx.preferences?.disliked_foods ?? [],
+      userCtx.preferences?.restrictions ?? [],
+    );
+    const forbiddenBlock = buildForbiddenPromptLine(forbiddenTerms);
+    if (forbiddenBlock) {
+      ctx += `\n\nALIMENTOS PROIBIDOS PARA SUGESTÕES (pode citá-los se a pessoa perguntar sobre eles, mas nunca os sugira ou recomende):\n${forbiddenBlock}`;
+    }
+
     const systemPrompt = `Você é a "Evolua Plus AI", assistente virtual de nutrição, alimentação e hábitos saudáveis da plataforma Evolua Plus. Fale português brasileiro, de forma humana, próxima, acolhedora e objetiva.
 
 IDENTIDADE (regra absoluta):
@@ -106,27 +119,39 @@ MEMÓRIA: respeite integralmente a memória do usuário. Se ela contradisser out
 
 FORMATO: use markdown simples (negrito, listas curtas). Nada de textos longos.${ctx}`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "openai/gpt-5.6-sol",
-        reasoning_effort: "none",
-        messages: [{ role: "system", content: systemPrompt }, ...safeMessages],
-      }),
-    });
+    /** Uma chamada à IA. `feedback` (regeneração) vai como instrução de sistema no fim. */
+    const callAI = async (feedback: string | null): Promise<string> => {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "openai/gpt-5.6-sol",
+          reasoning_effort: "none",
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...safeMessages,
+            ...(feedback ? [{ role: "system", content: feedback }] : []),
+          ],
+        }),
+      });
+      if (!response.ok) throw new AIHttpError(response.status, await response.text());
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content ?? "Desculpe, não consegui responder.";
+    };
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI Gateway error:", response.status, errorText);
+    let reply: string;
+    try {
+      const lastUserMessage = [...safeMessages].reverse().find((m) => m.role === "user")?.content ?? "";
+      ({ reply } = await runChatGuard({ callAI, terms: forbiddenTerms, lastUserMessage }));
+    } catch (e) {
+      if (!(e instanceof AIHttpError)) throw e;
+      console.error("AI Gateway error:", e.status, e.body);
       return new Response(JSON.stringify({ error: "Erro no assistente" }), {
-        status: response.status,
+        status: e.status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content ?? "Desculpe, não consegui responder.";
     return new Response(JSON.stringify({ reply }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

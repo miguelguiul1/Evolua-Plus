@@ -27,16 +27,19 @@ export type UserContext = {
 };
 
 const MAX_ITEMS = 40;
+/** A lista de "não gosto" aceita texto livre além da grade, então comporta mais itens. */
+export const MAX_DISLIKED_ITEMS = 80;
 
 /** Sanitiza listas vindas do banco antes de entrarem no prompt. */
-const cleanList = (value: unknown): string[] =>
+const cleanList = (value: unknown, max = MAX_ITEMS): string[] =>
   Array.isArray(value)
     ? value
         .filter((v): v is string => typeof v === "string")
-        // eslint-disable-next-line no-control-regex -- remove intencionalmente caracteres de controle do input do usuário
-        .map((v) => v.replace(/[\x00-\x1F\x7F]/g, " ").trim().slice(0, 60))
+        // Remove intencionalmente caracteres de controle do input do usuário.
+        // deno-lint-ignore no-control-regex
+        .map((v) => v.replace(/[\x00-\x1F\x7F]/g, " ").trim().slice(0, 60)) // eslint-disable-line no-control-regex
         .filter(Boolean)
-        .slice(0, MAX_ITEMS)
+        .slice(0, max)
     : [];
 
 const numOrNull = (v: unknown): number | null => {
@@ -47,8 +50,9 @@ const numOrNull = (v: unknown): number | null => {
 /** Texto curto vindo do banco: some se não for string, sempre tratado como DADO. */
 const cleanText = (value: unknown, max = 300): string | null => {
   if (typeof value !== "string") return null;
-  // eslint-disable-next-line no-control-regex -- remove intencionalmente caracteres de controle do input do usuário
-  const t = value.replace(/[\x00-\x1F\x7F]/g, " ").trim().slice(0, max);
+  // Remove intencionalmente caracteres de controle do input do usuário.
+  // deno-lint-ignore no-control-regex
+  const t = value.replace(/[\x00-\x1F\x7F]/g, " ").trim().slice(0, max); // eslint-disable-line no-control-regex
   return t || null;
 };
 
@@ -132,7 +136,7 @@ export async function loadUserContext(
             objective: typeof prefs.objective === "string" ? prefs.objective.trim().slice(0, 60) || null : null,
             restrictions: cleanList(prefs.restrictions),
             liked_foods: cleanList(prefs.liked_foods),
-            disliked_foods: cleanList(prefs.disliked_foods),
+            disliked_foods: cleanList(prefs.disliked_foods, MAX_DISLIKED_ITEMS),
           }
         : null,
     };
