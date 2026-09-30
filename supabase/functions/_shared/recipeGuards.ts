@@ -324,14 +324,14 @@ export async function runChatGuard(opts: {
   terms: ForbiddenTerm[];
   lastUserMessage: string;
   logger?: Logger;
-}): Promise<{ reply: string; regenerated: boolean; violations: string[] }> {
+}): Promise<{ reply: string; regenerated: boolean; violations: string[]; attempts: number }> {
   const { callAI, lastUserMessage, logger = console } = opts;
   const askedOrigins = new Set(findForbiddenHits(lastUserMessage ?? "", opts.terms).map((h) => h.term.origin));
   const terms = opts.terms.filter((t) => !askedOrigins.has(t.origin));
 
   const first = await callAI(null);
   const hits = findChatViolations(first, terms);
-  if (!hits.length) return { reply: first, regenerated: false, violations: [] };
+  if (!hits.length) return { reply: first, regenerated: false, violations: [], attempts: 1 };
 
   const labels = [...new Set(hits.map((h) => h.match.toLowerCase()))];
   logger.warn("[nutrition-chat] resposta citou alimentos proibidos; regenerando uma vez.", labels);
@@ -342,9 +342,9 @@ export async function runChatGuard(opts: {
     );
   } catch (e) {
     logger.warn("[nutrition-chat] falha na regeneração; mantendo a primeira resposta.", e);
-    return { reply: first, regenerated: false, violations: labels };
+    return { reply: first, regenerated: false, violations: labels, attempts: 2 };
   }
   const still = findChatViolations(second, terms).map((h) => h.match.toLowerCase());
   if (still.length) logger.warn("[nutrition-chat] resposta regenerada ainda cita alimentos proibidos.", [...new Set(still)]);
-  return { reply: second, regenerated: true, violations: [...new Set(still)] };
+  return { reply: second, regenerated: true, violations: [...new Set(still)], attempts: 2 };
 }

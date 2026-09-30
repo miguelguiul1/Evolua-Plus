@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, validateImage } from "../_shared/guard.ts";
 import { loadUserContext } from "../_shared/userContext.ts";
 import { buildForbiddenPromptLine, buildForbiddenTerms } from "../_shared/foodPreferences.ts";
-import { AIHttpError } from "../_shared/aiGuard.ts";
+import { AIHttpError, guardHeader } from "../_shared/aiGuard.ts";
 import { runFridgeGuard } from "../_shared/recipeGuards.ts";
 
 serve(async (req) => {
@@ -116,7 +116,7 @@ Regras:
     }
 
     return new Response(JSON.stringify(guarded.value), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json", ...guardHeader(guarded) },
     });
   } catch (e) {
     console.error("analyze-fridge error:", e);

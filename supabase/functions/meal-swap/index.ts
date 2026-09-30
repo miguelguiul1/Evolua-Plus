@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, clampText } from "../_shared/guard.ts";
 import { loadUserContext } from "../_shared/userContext.ts";
 import { buildForbiddenPromptLine, buildForbiddenTerms } from "../_shared/foodPreferences.ts";
-import { AIHttpError } from "../_shared/aiGuard.ts";
+import { AIHttpError, guardHeader } from "../_shared/aiGuard.ts";
 import { runMealSwapGuard } from "../_shared/recipeGuards.ts";
 
 const OBJECTIVE_LABEL: Record<string, string> = {
@@ -172,7 +172,7 @@ ${ctxLines.length ? `\nCONTEXTO:\n${ctxLines.join("\n")}` : ""}`;
     }
 
     return new Response(JSON.stringify(guarded.value), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json", ...guardHeader(guarded) },
     });
   } catch (err) {
     console.error("meal-swap error:", err);

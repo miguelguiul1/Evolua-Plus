@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse } from "../_shared/guard.ts";
 import { loadUserContext } from "../_shared/userContext.ts";
 import { buildForbiddenPromptLine, buildForbiddenTerms } from "../_shared/foodPreferences.ts";
-import { AIHttpError } from "../_shared/aiGuard.ts";
+import { AIHttpError, guardHeader } from "../_shared/aiGuard.ts";
 import { runChatGuard } from "../_shared/recipeGuards.ts";
 
 serve(async (req) => {
@@ -140,9 +140,10 @@ FORMATO: use markdown simples (negrito, listas curtas). Nada de textos longos.${
     };
 
     let reply: string;
+    let attempts = 1;
     try {
       const lastUserMessage = [...safeMessages].reverse().find((m) => m.role === "user")?.content ?? "";
-      ({ reply } = await runChatGuard({ callAI, terms: forbiddenTerms, lastUserMessage }));
+      ({ reply, attempts } = await runChatGuard({ callAI, terms: forbiddenTerms, lastUserMessage }));
     } catch (e) {
       if (!(e instanceof AIHttpError)) throw e;
       console.error("AI Gateway error:", e.status, e.body);
@@ -153,7 +154,11 @@ FORMATO: use markdown simples (negrito, listas curtas). Nada de textos longos.${
     }
 
     return new Response(JSON.stringify({ reply }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+        ...guardHeader({ attempts, regenerations: attempts - 1, sanitized: false }),
+      },
     });
   } catch (err) {
     console.error("nutrition-chat error:", err);

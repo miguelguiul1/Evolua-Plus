@@ -50,6 +50,14 @@ export type GuardResult<T> = {
 
 const MAX_FEEDBACK_ITEMS = 12;
 
+/**
+ * Cabeçalho de diagnóstico (só contagens, nenhum dado do usuário): permite medir, fora da
+ * função, quantas chamadas à IA, regenerações e sanitizações cada requisição custou.
+ */
+export const guardHeader = (r: { attempts: number; regenerations: number; sanitized: boolean }) => ({
+  "x-evolua-guard": `attempts=${r.attempts};regenerations=${r.regenerations};sanitized=${r.sanitized ? 1 : 0}`,
+});
+
 /** Mensagem de correção enviada à IA na regeneração. */
 export function describeViolations(violations: Violation[]): string {
   const seen = new Set<string>();
