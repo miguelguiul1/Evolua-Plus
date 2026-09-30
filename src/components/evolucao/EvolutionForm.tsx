@@ -73,11 +73,17 @@ const EvolutionForm = ({
       if (existing) {
         const oldPaths = storagePathsOf([existing.photo_url]);
         if (oldPaths.length) await supabase.storage.from(PROGRESS_BUCKET).remove(oldPaths);
-        await supabase.from("progress_photos").update({ photo_url: path }).eq("id", existing.id);
+        const { error } = await supabase.from("progress_photos").update({ photo_url: path }).eq("id", existing.id);
+        if (error) throw error;
       } else {
-        await supabase.from("progress_photos").insert({
+        const { error } = await supabase.from("progress_photos").insert({
           user_id: userId, weight_log_id: logId, photo_type: t.key, photo_url: path,
         });
+        if (error) {
+          // Registro recusado (RLS/trigger): não deixa o arquivo órfão no bucket.
+          await supabase.storage.from(PROGRESS_BUCKET).remove([path]);
+          throw error;
+        }
       }
     }
   };
