@@ -113,8 +113,10 @@ const Onboarding = () => {
     if (!objective) e.push("Escolha o seu objetivo.");
     if (!(nums.weight >= 30 && nums.weight <= 400)) e.push("Informe um peso entre 30 e 400 kg.");
     if (!(nums.height >= 100 && nums.height <= 250)) e.push("Informe uma altura entre 100 e 250 cm.");
-    if (!(Number.isInteger(nums.age) && nums.age >= 12 && nums.age <= 110))
-      e.push("Informe uma idade entre 12 e 110 anos.");
+    // Termos de Uso: app para maiores de 18. Dados de saúde de menores exigiriam consentimento
+    // de um responsável (LGPD art. 14), que o app não coleta.
+    if (!(Number.isInteger(nums.age) && nums.age >= 18 && nums.age <= 110))
+      e.push("O Evolua Plus é para maiores de 18 anos. Informe uma idade entre 18 e 110 anos.");
     if (!ACTIVITY_LEVELS.some((a) => a.id === activity)) e.push("Selecione o seu nível de atividade.");
     setErrors(e);
     return e.length === 0;
