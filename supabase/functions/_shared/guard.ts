@@ -52,6 +52,9 @@ export function rateLimit(key: string, max: number, windowMs = 60_000): Response
   return null;
 }
 
+/** Limite de corpo para funções que só recebem texto (as de imagem usam o padrão de readJson). */
+export const TEXT_BODY_MAX = 256_000;
+
 /** Garante que o corpo não é gigante. */
 export async function readJson(req: Request, maxBytes = 12_000_000): Promise<unknown | Response> {
   const len = Number(req.headers.get("content-length") ?? 0);
@@ -77,6 +80,21 @@ export function validateImage(value: unknown, maxBytes = 8_000_000): Response | 
 /** Limita textos livres antes de ir para a IA. */
 export function clampText(value: unknown, max = 2000): string {
   return typeof value === "string" ? value.slice(0, max) : "";
+}
+
+/** Número finito ou null — nunca repassa texto arbitrário do cliente para o prompt. */
+export function clampNumber(value: unknown): number | null {
+  const n = typeof value === "string" ? Number(value) : value;
+  return typeof n === "number" && Number.isFinite(n) ? n : null;
+}
+
+/** Lista de strings do cliente, limitada em itens e em caracteres por item. */
+export function clampStringList(value: unknown, maxItems: number, maxLen: number): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((v): v is string => typeof v === "string")
+    .map((v) => v.slice(0, maxLen))
+    .slice(0, maxItems);
 }
 
 export const isResponse = (v: unknown): v is Response => v instanceof Response;

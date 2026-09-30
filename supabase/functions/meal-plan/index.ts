@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse } from "../_shared/guard.ts";
+import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, TEXT_BODY_MAX } from "../_shared/guard.ts";
 import { loadUserContext, loadRoutineProfile, insufficientData, type RoutineProfile } from "../_shared/userContext.ts";
 import { buildForbiddenPromptLine, buildForbiddenTerms } from "../_shared/foodPreferences.ts";
 import { AIHttpError, guardHeader } from "../_shared/aiGuard.ts";
@@ -190,7 +190,7 @@ serve(async (req) => {
 
   try {
     // O corpo é ignorado como fonte de perfil — apenas texto livre opcional.
-    const body = await readJson(req);
+    const body = await readJson(req, TEXT_BODY_MAX);
     if (isResponse(body)) return body;
     const rawGoal = (body as Record<string, unknown>)?.goal;
     const goal = sanitizeUserText(rawGoal);

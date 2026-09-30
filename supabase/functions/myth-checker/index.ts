@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse } from "../_shared/guard.ts";
+import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, TEXT_BODY_MAX } from "../_shared/guard.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -11,7 +11,7 @@ serve(async (req) => {
 
 
   try {
-    const body = await readJson(req);
+    const body = await readJson(req, TEXT_BODY_MAX);
     if (isResponse(body)) return body;
     const { question: rawQuestion } = body as Record<string, unknown>;
     const question = typeof rawQuestion === "string" ? rawQuestion.slice(0, 500) : "";
