@@ -28,7 +28,7 @@ export const CONSENT_TEXT: Record<ConsentPurpose, { label: string; detail: strin
     label:
       "Autorizo o Evolua Plus a tratar meus dados de saúde (peso, medidas, % de gordura, fotos de evolução, idade, sexo, altura, alimentação, restrições e alergias, rotina e treino) para calcular metas e personalizar meu acompanhamento.",
     detail:
-      "Esses dados ficam guardados na sua conta, protegidos para que só você acesse. Você pode revogar esta autorização, exportar ou excluir seus dados a qualquer momento em Configurações.",
+      "Esses dados ficam guardados na sua conta, com regras de acesso que impedem outras contas de vê-los. Você pode revogar esta autorização, exportar ou excluir seus dados a qualquer momento em Configurações.",
     onRevoke:
       "Sem esta autorização o app para de funcionar para você: não é possível registrar peso, medidas, fotos, diário ou metas, nem gerar planos. Os dados já guardados continuam na sua conta até você excluí-los em Configurações. A autorização para a IA também será revogada.",
   },
