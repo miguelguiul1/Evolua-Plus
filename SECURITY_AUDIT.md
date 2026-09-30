@@ -409,6 +409,8 @@ build/publicação.
 | `2e38ba4` | Logout (evento `SIGNED_OUT`, que cobre também sessão expirada e conta excluída) apaga plano em cache, lista de compras, rascunho do onboarding, conquistas e notificações lidas. Tema e configurações do aparelho ficam. Novo teste `src/lib/localUserData.test.ts` | B4 |
 | `56a0c69` | `supabase/config.toml`: `verify_jwt = true` explícito para as 9 funções | B7 |
 | `4fa2582` | `supabase/migrations_pendentes/` com 3 migrations **não aplicadas** | M2, M3, B10 |
+| `7a916d8` | Fotos: helper `lib/progressPhotos.ts`, URL assinada de 15 min com renovação, aceita URL legada | M3 |
+| `db3f331` | `EvolutionForm`: erro ao gravar foto aparece e o arquivo órfão é removido | B10 |
 
 ### Verificações
 
@@ -416,7 +418,7 @@ build/publicação.
 |---|---|
 | `npx tsc -p tsconfig.app.json --noEmit` e `-p tsconfig.node.json` | 0 erros |
 | `npx eslint .` | 0 erros |
-| `npx vitest run` | 54 testes passando (5 arquivos) |
+| `npx vitest run` | 58 testes passando (6 arquivos) |
 | `deno check` (9 `index.ts` + `_shared/*.ts`, 18 arquivos) | 0 erros ¹ |
 | `deno test --no-lock supabase/functions/_shared/` | 65 testes passando (antes 62; +3 do `guard.test.ts`) |
 | `npm run build` | ok |
@@ -448,14 +450,8 @@ versão (claims vazio `''` quebrava o cast para `jsonb` e teria quebrado o cadas
 ### 2. Verificar o bucket e aplicar as migrations pendentes
 1. Painel do Supabase → Storage → `progress` → confira se **"Public bucket" está DESLIGADO**.
    Se estiver ligado, desligue agora: isso é urgente, porque as fotos corporais ficariam acessíveis
-   por URL.
-2. Opcional, pelo SQL Editor (só leitura):
-   `select id, public, file_size_limit, allowed_mime_types from storage.buckets;`
-3. Aplique primeiro no projeto de **TESTE**: mova os 3 arquivos de
-   `supabase/migrations_pendentes/` para `supabase/migrations/` e rode
-   `supabase link --project-ref <REF_DO_TESTE> && supabase db push`. Rode os testes manuais abaixo.
-4. Depois, em produção, pelo fluxo da Lovable ou com `supabase link --project-ref icmyqmvcwzdfleuxyiux && supabase db push`.
-   Cada arquivo tem um bloco de *rollback* comentado no final.
+   por URL. O app já funciona com o bucket privado (ver "Compatibilidade das migrations").
+2. Aplique as migrations seguindo a seção **"Ordem segura para aplicar as migrations"**, logo abaixo.
 
 ### 3. Cota diária de IA (A1)
 Sugestão de migration (não criada, porque muda o comportamento das funções):
@@ -522,6 +518,170 @@ Configure também um alerta de consumo na Lovable.
 - **Memória da IA**: carregar `ai_memory` no servidor (`nutrition-chat`) em vez de aceitar do
   cliente.
 - **Windows Defender**: enviar o APK ao VirusTotal e reportar o falso positivo à Microsoft.
+
+---
+
+## Compatibilidade das migrations pendentes com o código
+
+Verificação feita em 30/09/2026 **sem aplicar nada no banco**: leitura do código e do histórico do
+git, e testes num Postgres 16 local.
+
+### Bucket `progress` privado (M3), compatível
+
+Todos os usos do bucket:
+
+| Onde | Operação | Como |
+|---|---|---|
+| `components/evolucao/EvolutionForm.tsx` | upload, troca e remoção da foto antiga | `upload(path)`, grava o **caminho** em `photo_url` |
+| `pages/Evolucao.tsx` | exibição (cards, comparação, histórico) e exclusão | `createSignedUrls` e `remove` |
+| `pages/Configuracoes.tsx` | exportação | exporta as linhas de `progress_photos` (caminhos), sem baixar arquivos |
+| `functions/delete-account` | exclusão da conta | `service_role`: `list` + `remove` |
+| PDF (`lib/pdf.ts`, `lib/pdfExport.ts`) | — | só Plano e Diário, **sem fotos** |
+| `html2canvas` | — | não é usado no código (vem só como dependência interna do `jspdf`) |
+
+- **Nenhuma tela usa `getPublicUrl`**, nem hoje nem em nenhum commit do histórico
+  (`git log -S getPublicUrl` vazio).
+- **Nenhum código gravou URL pública no banco.** Desde o primeiro commit das fotos (`e6adecf`),
+  `photo_url` recebe o caminho `<userId>/<logId>-<tipo>-<timestamp>.<ext>` e a exibição usa URL
+  assinada. O `match(/progress\/(.+)$/)` que aparece em `3a52ae2` era só uma defesa do antigo fluxo
+  de exclusão e não indica dados gravados com URL.
+- Melhorias feitas mesmo assim (`7a916d8`): `src/lib/progressPhotos.ts` centraliza o acesso.
+  A URL assinada caiu de 1 h, sem renovação (as fotos quebravam numa tela aberta por mais de 1 h), para
+  **15 min, renovada a cada 12 min**. `toStoragePath` também aceita URL completa
+  (`/object/public|sign|authenticated/progress/...`), então uma linha antiga ou inserida à mão
+  continua aparecendo e sendo apagada com o bucket privado. Há 4 testes em
+  `src/lib/progressPhotos.test.ts`.
+- Os limites da migration (15 MB, imagens JPEG/PNG/WEBP/HEIC/HEIF/GIF/AVIF) cobrem o
+  `accept="image/*"` do formulário, exceto SVG, que fica bloqueado de propósito. Uma foto de celular
+  acima de 15 MB passa a ser recusada com a mensagem de erro do Storage.
+
+**Registros antigos**: não há o que migrar pelo código. Para confirmar no banco, rode no SQL Editor
+(só leitura):
+```sql
+-- 1) quantas linhas guardam URL em vez de caminho (esperado: 0)
+select count(*) filter (where photo_url ~* '^https?://') as com_url, count(*) as total
+from public.progress_photos;
+
+-- 2) linhas cujo arquivo não existe no bucket (fotos quebradas, independente da migration)
+select p.id, p.user_id, p.photo_url
+from public.progress_photos p
+left join storage.objects o on o.bucket_id = 'progress' and o.name = p.photo_url
+where o.id is null;
+```
+Se a consulta 1 der mais que 0, normalize (o front já funciona sem isso, mas deixa o banco coerente):
+```sql
+update public.progress_photos
+set photo_url = regexp_replace(split_part(photo_url, '?', 1),
+                               '^.*/object/(public|sign|authenticated)/progress/', '')
+where photo_url ~* '^https?://.*/object/(public|sign|authenticated)/progress/';
+```
+(Se algum caminho tiver `%20` ou outro caractere codificado, corrija essas linhas à mão. É raro,
+porque o app gera nomes sem espaço.)
+
+### Trigger de `is_premium` (M2), compatível
+
+- **Nenhum caminho escreve `is_premium`**: nem o front, nem Edge Function, nem script. O único
+  `ALTER` é o que cria a coluna. O checkout (`pages/Checkout.tsx`) só abre o link externo da
+  Kirvano, hoje o placeholder `"#"`. **Não há webhook** de pagamento nem rotina de admin.
+- Escritas em `profiles` com o token do usuário: `useOnboarding.ts` (UPDATE e, se não houver
+  linha, INSERT de altura, idade, sexo, atividade, esportes e onboarding), `EvolutionForm.tsx`
+  (`height_cm`) e `Configuracoes.tsx` (`full_name`). Nenhuma manda `is_premium`: o UPDATE passa
+  direto, e o INSERT de fallback recebe `is_premium = false`, que já é o default.
+- O cadastro (`handle_new_user`, disparado pelo Auth sem JWT de usuário) continua funcionando. Foi
+  testado com claims vazio, o caso que quebrava na primeira versão.
+- **Quando criar o webhook da Kirvano**: ele precisa rodar numa Edge Function com
+  `SUPABASE_SERVICE_ROLE_KEY` (role `service_role`, liberado pelo trigger), validar a assinatura do
+  webhook e **nunca** usar o token do usuário.
+
+### Trigger de dono da foto (B10), compatível
+
+O fluxo de `EvolutionForm.save()` é: grava `weight_log` com `user_id` do usuário logado, recebe
+`logId` e insere em `progress_photos` com o mesmo `user_id` e `weight_log_id = logId`. Na edição,
+só `photo_url` muda. Reproduzi a sequência no Postgres local (uma transação por requisição, com RLS
+e JWT):
+
+| Passo | Resultado |
+|---|---|
+| Novo registro com foto | ✅ gravou |
+| Trocar a foto de um registro (UPDATE `photo_url`) | ✅ gravou |
+| Foto sem registro (`weight_log_id` nulo) | ✅ gravou |
+| Excluir o registro (cascata) | ✅ foto removida sem erro |
+| Foto apontando para `weight_log` de outra conta | ⛔ "Registro de evolução inválido" |
+
+Também corrigi (`db3f331`) um problema que o trigger deixaria visível: o formulário ignorava o erro
+do insert/update em `progress_photos`, então uma recusa passaria em silêncio e deixaria o arquivo
+órfão no bucket. Agora o erro aparece e o arquivo recém-enviado é removido.
+
+---
+
+## Ordem segura para aplicar as migrations
+
+O front novo funciona com o bucket **público ou privado** e com ou sem os triggers. Por isso ele vai
+**antes** das migrations.
+
+**0. Pré-checagem (produção, só leitura, no SQL Editor)** — anote os resultados, porque eles servem para o rollback:
+```sql
+select id, public, file_size_limit, allowed_mime_types from storage.buckets where id = 'progress';
+select count(*) filter (where photo_url ~* '^https?://') as com_url, count(*) as total from public.progress_photos;
+select count(*) as premium from public.profiles where is_premium;
+select tgname from pg_trigger where tgrelid in ('public.profiles'::regclass, 'public.progress_photos'::regclass) and not tgisinternal;
+```
+
+**1. Backup**
+- Painel → Database → Backups: confirme que há um backup de hoje ou gere um (Pro: diário/PITR).
+- E/ou, localmente: `supabase link --project-ref icmyqmvcwzdfleuxyiux` e depois
+  `supabase db dump -f backup-schema.sql` e `supabase db dump --data-only -f backup-data.sql`.
+  Guarde fora do repositório, porque contém dados pessoais.
+- As migrations não mexem nos arquivos do Storage, só na configuração do bucket.
+
+**2. Deploy do front e das functions**
+- Merge de `chore/seguranca` → deploy da Vercel. Confira em /evolucao que as fotos aparecem.
+- Deploy das 9 Edge Functions.
+- Novo APK/AAB quando for publicar o app (versões antigas do app também funcionam com o bucket
+  privado, porque já usavam URL assinada).
+
+**3. Projeto de TESTE**
+- Copie os 3 arquivos de `supabase/migrations_pendentes/` para `supabase/migrations/`.
+- `supabase link --project-ref <REF_DO_TESTE> && supabase db push`.
+- Rode os testes manuais (seção "Duas contas"), principalmente os itens 6–10, 16 e 17 e o cadastro
+  de uma conta nova.
+
+**4. Produção**, uma migration por vez, testando entre elas:
+1. `20260930120000_lock_profiles_premium.sql`. Depois: crie uma conta nova e edite o nome no app.
+2. `20260930120200_progress_photos_same_owner.sql`. Depois: salve um registro de evolução com foto
+   e troque a foto.
+3. `20260930120100_harden_progress_bucket.sql`. Depois: abra /evolucao (as fotos aparecem), envie
+   uma foto nova e confirme que `/storage/v1/object/public/progress/<arquivo>` **não abre** sem login.
+
+Aplique pelo fluxo da Lovable ou com `supabase link --project-ref icmyqmvcwzdfleuxyiux && supabase db push`.
+Os arquivos já devem estar em `supabase/migrations/` e commitados.
+
+**5. Pós-aplicação**: repita as consultas do passo 0 (o bucket deve estar `public = false`, com
+limite de 15728640, e os 2 triggers novos devem aparecer) e acompanhe os logs de Storage e
+PostgREST por um dia.
+
+### Rollback (SQL Editor, produção)
+
+Rode só o bloco da migration que der problema. Nenhum rollback apaga dados.
+
+```sql
+-- 20260930120000_lock_profiles_premium.sql
+drop trigger if exists protect_profiles_premium_trg on public.profiles;
+drop function if exists public.protect_profiles_premium();
+
+-- 20260930120200_progress_photos_same_owner.sql
+drop trigger if exists validate_progress_photo_owner_trg on public.progress_photos;
+drop function if exists public.validate_progress_photo_owner();
+
+-- 20260930120100_harden_progress_bucket.sql
+-- Volta os limites ao estado anterior (os valores anotados no passo 0; o padrão era sem limite).
+update storage.buckets set file_size_limit = null, allowed_mime_types = null where id = 'progress';
+-- Só se o bucket ERA público no passo 0 E alguma tela depender disso (não é o caso do código atual):
+-- update storage.buckets set public = true where id = 'progress';
+```
+Se o rollback for pelo fluxo de migrations (e não pelo SQL Editor), crie uma migration nova com o
+bloco correspondente, em vez de apagar o arquivo antigo: o histórico de migrations já aplicadas
+não pode ser reescrito.
 
 ---
 
