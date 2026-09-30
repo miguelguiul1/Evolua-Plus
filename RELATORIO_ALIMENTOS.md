@@ -286,3 +286,83 @@ As functions podem ir antes do front: a regra e a validação passam a valer par
 - **Deno:** `--no-lock`, e `no-import-prefix` excluída do lint, para não criar `deno.json`/`deno.lock` que possam mudar o deploy.
 - **Smoke test** com Supabase falso no lugar do `functions serve` (sem Docker).
 - **Limite da lista** subiu de 40 para 80 itens.
+
+## 11. Teste com IA real (projeto de teste)
+
+**Status: NÃO EXECUTADO.** Nenhuma chamada à IA real foi feita. Foram 0 chamadas, então não há números de violações, regenerações nem tempos.
+
+O teste esbarrou em quatro bloqueios. Nenhum deles se resolve com segurança sem você:
+
+| # | Bloqueio | Evidência |
+|---|---|---|
+| 1 | **Projeto de teste pausado** (status `INACTIVE`) | O deploy falhou com `Cannot retrieve service for project laehlabpoayhkglhavfi with current status 'INACTIVE'`. **Nenhuma função foi publicada.** |
+| 2 | **Falta o secret `LOVABLE_API_KEY`** | Secrets existentes (só nomes): `MOCK_AI`, `SUPABASE_ANON_KEY`, `SUPABASE_DB_URL`, `SUPABASE_JWKS`, `SUPABASE_PUBLISHABLE_KEYS`, `SUPABASE_SECRET_KEYS`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_URL`. Sem a chave, analyze-fridge e nutrition-chat respondem erro 500. |
+| 3 | **O secret `MOCK_AI` existe** | Se ele estiver `true`, meal-plan e meal-swap devolvem o plano fixo de teste, e não a IA real. O script detecta isso e para. |
+| 4 | **`.env.test` sem usuário de teste** | O arquivo só tem `VITE_SUPABASE_PROJECT_ID`, `VITE_SUPABASE_PUBLISHABLE_KEY` e `VITE_SUPABASE_URL`. Faltam `TEST_USER_EMAIL` e `TEST_USER_PASSWORD`. |
+
+### Checagens de segurança feitas
+- **Projeto ligado:** `supabase/.temp/project-ref` = **`laehlabpoayhkglhavfi`** (teste). O `.env.test` também aponta para ele.
+- **Atenção ao `config.toml`:** ele ainda tem `project_id = "icmyqmvcwzdfleuxyiux"` (**produção**). Por isso todo comando usa `--project-ref laehlabpoayhkglhavfi` explicitamente.
+- A conta logada na CLI **não tem acesso** ao projeto de produção: ele nem aparece em `projects list`.
+- **`.env.test` está no `.gitignore`.** Nenhum valor de senha, token ou chave foi impresso, commitado ou registrado.
+- **Não reativei o projeto por conta própria.** Isso muda o estado da conta Supabase e, sem a chave da IA e o usuário de teste, não permitiria rodar o teste. Anotado como a opção mais segura.
+
+### O que ficou pronto
+- **Cabeçalho `x-evolua-guard`** nas 4 funções (commit `9c8bbaa`). Ele informa, por requisição, `attempts` (chamadas ao modelo), `regenerations` e `sanitized`. Só traz contagens, nenhum dado do usuário, e o corpo da resposta não mudou. Com ele dá para medir o custo real sem depender dos logs.
+- **`scripts/test-ia-real.ts`** (commit `352d6e2`), rodável com `deno run -A --no-lock scripts/test-ia-real.ts`:
+  - **Travas de segurança:**
+    - aborta se o `.env.test` não apontar para `laehlabpoayhkglhavfi`;
+    - nunca imprime credenciais;
+    - aborta se detectar respostas de MOCK.
+  - **Preferências do usuário de teste:** grava `disliked_foods = ["Fígado", "Jiló", "Peixe", "Coentro", "Leite"]` e `restrictions = ["Alergia a amendoim"]`. Guarda as originais e **restaura mesmo se der erro no meio**. Se o usuário não tinha linha, ela é apagada no fim.
+  - **Chamadas:** 5 × meal-plan, 8 × meal-swap (refeições variadas, várias contendo o alimento proibido de propósito) e 5 × nutrition-chat ("Me sugira um jantar", "Me passa uma receita com peixe", "O que comer no lanche?", …).
+    - O analyze-fridge só roda se `FRIDGE_IMAGE` apontar para uma foto. Não há imagem de teste no repositório, então por padrão é pulado com aviso.
+  - **Teto de 25 chamadas REAIS ao modelo**, contando as regenerações internas pelo cabeçalho. Uma requisição só sai se o pior caso dela (3 no plano/troca, 2 no chat) ainda couber no teto. Sem regenerações, o roteiro usa 18.
+  - **Varredura do resultado final** com o mesmo módulo do projeto:
+    - meal-plan e meal-swap: resposta inteira, incluindo opções, lista de compras e dicas;
+    - chat: mesma regra de citação legítima usada na função.
+    - Conta violações por caminho (incluindo tilápia, salmão, atum, pasta de amendoim) e as menções a leite vegetal, que não podem ser bloqueadas.
+  - **Tempos:** média, mínimo e máximo por função. Marca chamadas acima de 80% do limite de 150 s.
+  - **Logs:** se `SUPABASE_ACCESS_TOKEN` estiver definido, consulta os logs do projeto de teste (API de analytics) e conta "regeneração" e "SANITIZADA".
+  - As respostas completas vão para um arquivo temporário **fora do repositório**.
+  - Testado até onde dá sem os bloqueios: `deno check` e lint ok. Ao rodar, para com segurança: `PARADO: Faltam no .env.test: TEST_USER_EMAIL, TEST_USER_PASSWORD`.
+
+### Como destravar (na ordem)
+1. **Reativar o projeto de teste:** Dashboard do Supabase → projeto *Evolua Plus* (`laehlabpoayhkglhavfi`) → **Restore project**. Espere o status ficar `ACTIVE`, pode levar alguns minutos.
+2. **Cadastrar a chave da IA sem passar pelo histórico do terminal.**
+   - Crie `.env.secrets.local` na raiz. Esse nome já é ignorado pelo git (regra `.env.*.local`). Coloque nele `LOVABLE_API_KEY=<sua chave>` e `MOCK_AI=false`.
+   - Rode:
+     ```bash
+     npx supabase@2 secrets set --env-file .env.secrets.local --project-ref laehlabpoayhkglhavfi
+     npx supabase@2 secrets list --project-ref laehlabpoayhkglhavfi   # confira só os nomes
+     ```
+   - A chave é a do gateway de IA da Lovable (`ai.gateway.lovable.dev`), a mesma que o projeto de produção recebe do Lovable Cloud. Se não houver como obter essa chave fora do Lovable, o teste com IA real precisa ser feito lá, ou as funções precisariam de outro provedor de IA configurável.
+3. **Criar o usuário de teste**, se ainda não existir: Dashboard → Authentication → Add user (e-mail + senha, com "Auto confirm"). Acrescente ao `.env.test`:
+   ```
+   TEST_USER_EMAIL=...
+   TEST_USER_PASSWORD=...
+   ```
+4. **Publicar e rodar:**
+   ```bash
+   npx supabase@2 functions deploy meal-plan meal-swap analyze-fridge nutrition-chat --project-ref laehlabpoayhkglhavfi --use-api
+   deno run -A --no-lock scripts/test-ia-real.ts
+   # opcional: SUPABASE_ACCESS_TOKEN=... para contar nos logs; FRIDGE_IMAGE=foto.jpg para a geladeira
+   ```
+5. **Depois do teste:** se os testes E2E dependem do mock, volte com `MOCK_AI=true`. Pause o projeto de novo, se quiser.
+
+### Recomendação
+**Ainda não dá para declarar pronto para produção com base em IA real**, porque o teste não rodou. O que está comprovado:
+- a lógica de validação, com 62 testes Deno e 53 do vitest;
+- o código real das funções de ponta a ponta com IA simulada (smoke test).
+
+O que falta medir:
+- quantas vezes o modelo desobedece na 1ª tentativa;
+- quanto tempo as regenerações somam no meal-plan (a geração leva ~30–60 s e o limite para regenerar é 75 s);
+- se as receitas sanitizadas ficam aceitáveis.
+
+**Critério sugerido para liberar:**
+- 0 violações no resultado final (garantido pela validação);
+- regeneração em no máximo ~1 de cada 5 planos;
+- nenhuma chamada acima de ~120 s.
+
+**Se as regenerações forem frequentes,** o primeiro ajuste é repetir a lista proibida também na mensagem do usuário, não só no prompt de sistema. O segundo é pedir que a IA devolva um campo `"alimentos_evitados"`, para ela "pensar" na restrição antes de escrever o plano.
