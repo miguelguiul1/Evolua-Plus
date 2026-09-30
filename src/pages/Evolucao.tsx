@@ -20,6 +20,7 @@ import {
 } from "recharts";
 import EvolutionForm from "@/components/evolucao/EvolutionForm";
 import { MEASURES, PHOTO_TYPES, PhotoRow, WeightRow, fmtDate } from "@/components/evolucao/types";
+import { PROGRESS_BUCKET, SIGNED_URL_REFRESH_MS, signProgressPhotos, storagePathsOf } from "@/lib/progressPhotos";
 
 const daysBetween = (a: string, b: string) =>
   Math.abs(new Date(a).getTime() - new Date(b).getTime()) / 86400000;
@@ -49,21 +50,24 @@ const Evolucao = () => {
     const h = prof?.height_cm ?? rows.filter((r) => r.height_cm).slice(-1)[0]?.height_cm ?? null;
     setHeight(h ? String(h) : "");
 
-    const paths = (p ?? []).map((x) => x.photo_url);
-    if (paths.length) {
-      const { data: signed } = await supabase.storage.from("progress").createSignedUrls(paths, 3600);
-      const map: Record<string, string> = {};
-      signed?.forEach((s) => { if (s.signedUrl && s.path) map[s.path] = s.signedUrl; });
-      setSignedUrls(map);
-    } else {
-      setSignedUrls({});
-    }
+    setSignedUrls(await signProgressPhotos((p ?? []).map((x) => x.photo_url)));
   };
 
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `load` só depende de `user` (já coberto); incluí-la recriaria o efeito a cada render, pois sua identidade muda sempre.
   }, [user]);
+
+  // Bucket privado: URLs assinadas duram 15 min e são renovadas enquanto a tela estiver aberta.
+  useEffect(() => {
+    if (!photos.length) return;
+    const id = setInterval(async () => {
+      const next = await signProgressPhotos(photos.map((x) => x.photo_url));
+      // Falha de rede na renovação: mantém as URLs atuais em vez de sumir com as fotos.
+      if (Object.keys(next).length) setSignedUrls(next);
+    }, SIGNED_URL_REFRESH_MS);
+    return () => clearInterval(id);
+  }, [photos]);
 
   const photosByLog = useMemo(() => {
     const map: Record<string, PhotoRow[]> = {};
@@ -172,8 +176,8 @@ const Evolucao = () => {
 
   const del = async () => {
     if (!deleteId) return;
-    const paths = (photosByLog[deleteId] ?? []).map((p) => p.photo_url);
-    if (paths.length) await supabase.storage.from("progress").remove(paths);
+    const paths = storagePathsOf((photosByLog[deleteId] ?? []).map((p) => p.photo_url));
+    if (paths.length) await supabase.storage.from(PROGRESS_BUCKET).remove(paths);
     const { error } = await supabase.from("weight_log").delete().eq("id", deleteId);
     setDeleteId(null);
     if (error) return toast.error("Erro ao excluir", { description: error.message });

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { PHOTO_TYPES, PhotoRow, WeightRow } from "./types";
 import { useSyncModules } from "@/hooks/useNutrition";
 import { RANGES, checkOptional, checkRange, firstError, parseNum } from "@/lib/validation";
+import { PROGRESS_BUCKET, storagePathsOf } from "@/lib/progressPhotos";
 
 type Props = {
   open: boolean;
@@ -66,11 +67,12 @@ const EvolutionForm = ({
       if (!file) continue;
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
       const path = `${userId}/${logId}-${t.key}-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("progress").upload(path, file, { upsert: true });
+      const { error: upErr } = await supabase.storage.from(PROGRESS_BUCKET).upload(path, file, { upsert: true });
       if (upErr) throw upErr;
       const existing = editingPhotos.find((p) => p.photo_type === t.key);
       if (existing) {
-        await supabase.storage.from("progress").remove([existing.photo_url]);
+        const oldPaths = storagePathsOf([existing.photo_url]);
+        if (oldPaths.length) await supabase.storage.from(PROGRESS_BUCKET).remove(oldPaths);
         await supabase.from("progress_photos").update({ photo_url: path }).eq("id", existing.id);
       } else {
         await supabase.from("progress_photos").insert({
