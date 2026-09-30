@@ -8,9 +8,9 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 );
 
 /**
- * Rascunho gerado automaticamente para viabilizar a publicação nas lojas. PRECISA DE
- * REVISÃO jurídica/humana antes de publicar — em especial o e-mail de contato
- * (placeholder) e as condições comerciais (planos, reembolso) descritas em "Vendas".
+ * RASCUNHO para revisão jurídica. Não publicar sem revisão — em especial controlador, e-mail
+ * de contato (placeholders) e condições comerciais (planos, reembolso) descritas em "Vendas".
+ * Placeholders listados em LGPD_RELATORIO.md.
  */
 const Termos = () => (
   <div className="min-h-screen bg-background pt-24 pb-20">
@@ -20,7 +20,7 @@ const Termos = () => (
           Termos de <span className="text-primary">Uso</span>
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          Última atualização: 28 de setembro de 2026. Vigora tanto para o site quanto para o aplicativo
+          Última atualização: 30 de setembro de 2026. Vigora tanto para o site quanto para o aplicativo
           Evolua Plus (Android/iOS).
         </p>
       </header>
@@ -42,25 +42,52 @@ const Termos = () => (
           </p>
         </Section>
 
-        <Section title="3. Não somos aconselhamento médico">
+        <Section title="3. O Evolua Plus não substitui nutricionista nem médico">
+          <p className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-foreground">
+            <strong>Importante:</strong> o Evolua Plus é uma ferramenta de apoio baseada em inteligência
+            artificial. Ele <strong>não é nutricionista, médico nem profissional de saúde</strong>, não faz
+            diagnóstico, não prescreve dietas terapêuticas nem medicamentos e{" "}
+            <strong>não substitui consulta, avaliação ou acompanhamento profissional</strong>.
+          </p>
           <p>
-            O conteúdo gerado pelo Evolua Plus, incluindo planos alimentares e respostas do assistente de
-            IA, tem caráter informativo e não substitui a orientação de um médico, nutricionista ou outro
-            profissional de saúde habilitado. Antes de iniciar qualquer mudança significativa na sua
-            alimentação, especialmente se você tiver condições de saúde pré-existentes, consulte um
-            profissional. Em caso de emergência médica, procure atendimento imediato.
+            Planos alimentares, receitas, estimativas de calorias e nutrientes, análises de fotos e respostas
+            do assistente são <strong>gerados automaticamente e podem conter erros</strong>. Valores
+            nutricionais e porções identificados por foto são aproximados.
+          </p>
+          <p>
+            Procure um nutricionista ou médico antes de mudar sua alimentação, principalmente se você tiver
+            doença ou condição de saúde (como diabetes, hipertensão, doença renal ou transtorno alimentar),
+            estiver grávida ou amamentando, tomar medicamentos ou tiver passado por cirurgia recente. Em caso de
+            emergência, procure atendimento médico imediatamente.
           </p>
         </Section>
 
-        <Section title="4. Sua conta">
+        <Section title="4. Alergias e restrições alimentares">
+          <p className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-foreground">
+            <strong>Se você tem alergia ou intolerância alimentar, confira sempre os ingredientes e os
+            rótulos antes de consumir qualquer alimento ou receita sugerida pelo app.</strong>
+          </p>
+          <p>
+            O app tenta evitar os alimentos que você marca como restrição, alergia ou “não gosto”, mas{" "}
+            <strong>não garante</strong> que uma sugestão esteja livre deles. A IA pode errar, deixar passar
+            um ingrediente, um derivado ou um nome diferente do mesmo alimento, e não conhece a composição de
+            produtos industrializados, nem riscos de contaminação cruzada. A decisão de consumir é sempre sua.
+            Em caso de alergia grave, siga a orientação do seu médico.
+          </p>
+        </Section>
+
+        <Section title="5. Sua conta">
           <p>
             Você é responsável por manter a confidencialidade da sua senha e por todas as atividades
             realizadas na sua conta. Você deve ter pelo menos 18 anos, ou a maioridade civil aplicável no
-            seu país, para criar uma conta. Informações fornecidas no cadastro devem ser verdadeiras.
+            seu país, para criar uma conta. Informações fornecidas no cadastro devem ser verdadeiras. Para
+            usar o app, você precisa autorizar o tratamento dos seus dados de saúde, e para usar as funções
+            de IA, o envio desses dados aos provedores de IA, como explica a{" "}
+            <Link to="/privacidade" className="text-primary hover:underline">Política de Privacidade</Link>.
           </p>
         </Section>
 
-        <Section title="5. Planos pagos e cobrança">
+        <Section title="6. Planos pagos e cobrança">
           <p>
             Alguns recursos do Evolua Plus podem exigir uma assinatura paga. Preços, formas de pagamento,
             periodicidade e política de reembolso são exibidos na tela de contratação (página "Planos")
@@ -69,7 +96,7 @@ const Termos = () => (
           </p>
         </Section>
 
-        <Section title="6. Uso aceitável">
+        <Section title="7. Uso aceitável">
           <p>Ao usar o Evolua Plus, você concorda em não:</p>
           <ul className="list-disc pl-5 space-y-2">
             <li>Usar o aplicativo para fins ilegais ou fraudulentos;</li>
@@ -79,15 +106,15 @@ const Termos = () => (
           </ul>
         </Section>
 
-        <Section title="7. Propriedade intelectual">
+        <Section title="8. Propriedade intelectual">
           <p>
-            O Evolua Plus, sua marca, design, código e conteúdo original são de propriedade da equipe
-            responsável pelo produto. Você mantém a titularidade sobre os dados pessoais que você
+            O Evolua Plus, sua marca, design, código e conteúdo original são de propriedade de
+            [NOME_DO_CONTROLADOR]. Você mantém a titularidade sobre os dados pessoais que você
             fornece (fotos, textos, medições), que usamos apenas conforme nossa Política de Privacidade.
           </p>
         </Section>
 
-        <Section title="8. Cancelamento e exclusão de conta">
+        <Section title="9. Cancelamento e exclusão de conta">
           <p>
             Você pode excluir sua conta a qualquer momento em Configurações → Excluir conta. Isso remove
             permanentemente seus dados, conforme descrito na Política de Privacidade. Podemos suspender
@@ -95,7 +122,7 @@ const Termos = () => (
           </p>
         </Section>
 
-        <Section title="9. Limitação de responsabilidade">
+        <Section title="10. Limitação de responsabilidade">
           <p>
             O Evolua Plus é fornecido "como está". Não garantimos que as recomendações geradas por IA
             sejam livres de erros e não nos responsabilizamos por decisões tomadas exclusivamente com
@@ -103,7 +130,7 @@ const Termos = () => (
           </p>
         </Section>
 
-        <Section title="10. Alterações nestes termos">
+        <Section title="11. Alterações nestes termos">
           <p>
             Podemos atualizar estes Termos para refletir mudanças no produto ou na legislação. A data no
             topo desta página indica a versão vigente. Mudanças relevantes serão comunicadas no
@@ -111,7 +138,7 @@ const Termos = () => (
           </p>
         </Section>
 
-        <Section title="11. Contato">
+        <Section title="12. Contato">
           <p>
             Dúvidas sobre estes Termos podem ser enviadas para{" "}
             <a href="mailto:[EMAIL_DE_CONTATO]" className="text-primary hover:underline">[EMAIL_DE_CONTATO]</a>.
