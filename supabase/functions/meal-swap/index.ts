@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, TEXT_BODY_MAX, clampText } from "../_shared/guard.ts";
+import { corsHeaders, json, requireUser, requireAiConsent, rateLimit, readJson, isResponse, TEXT_BODY_MAX, clampText } from "../_shared/guard.ts";
 import { loadUserContext } from "../_shared/userContext.ts";
 import { buildForbiddenPromptLine, buildForbiddenTerms } from "../_shared/foodPreferences.ts";
 import { AIHttpError, guardHeader } from "../_shared/aiGuard.ts";
@@ -53,6 +53,8 @@ serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Método não permitido" }, 405);
   const auth = await requireUser(req);
   if (isResponse(auth)) return auth;
+  const noConsent = requireAiConsent(auth);
+  if (noConsent) return noConsent;
   const limited = rateLimit("meal-swap:" + auth.userId, 15);
   if (limited) return limited;
 

@@ -9,6 +9,7 @@ import { MEAL_TYPES, todayISO, useSyncModules } from "@/hooks/useNutrition";
 import { compressImage } from "@/lib/compressImage";
 import { RANGES, checkRange, firstError } from "@/lib/validation";
 import CameraCapture from "@/components/CameraCapture";
+import { useRequireAiConsent } from "@/components/consent/aiConsentContext";
 
 interface PortionItem {
   alimento: string;
@@ -29,6 +30,7 @@ interface PortionResult {
 }
 
 const PortionScanner = () => {
+  const requireAiConsent = useRequireAiConsent();
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -66,6 +68,7 @@ const PortionScanner = () => {
 
   const analyze = async () => {
     if (!image) return;
+    if (!(await requireAiConsent())) return;
     setAnalyzing(true);
     setErrorMsg(null);
     try {

@@ -167,6 +167,21 @@ if (authError || !auth.session) fail(`login do usuário de teste falhou (${authE
 const userId = auth.user!.id;
 const token = () => auth.session!.access_token;
 
+// As funções de IA exigem consentimento LGPD (user_metadata.consents). A conta de TESTE
+// registra os dois consentimentos, como o app faz na tela de consentimento.
+{
+  const at = new Date().toISOString();
+  const { error: consentError } = await supabase.auth.updateUser({
+    data: {
+      consents: {
+        health_data: { granted: true, version: "teste-automatizado", at },
+        ai_processing: { granted: true, version: "teste-automatizado", at },
+      },
+    },
+  });
+  if (consentError) fail(`não consegui registrar o consentimento da conta de teste (${consentError.message}).`);
+}
+
 const { data: original, error: readError } = await supabase
   .from("user_preferences")
   .select("objective, restrictions, liked_foods, disliked_foods")

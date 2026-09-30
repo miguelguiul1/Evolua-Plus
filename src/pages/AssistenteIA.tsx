@@ -14,10 +14,12 @@ import {
   useFoodLogRange, useGoals, usePreferences, useWeightLog,
 } from "@/hooks/useNutrition";
 import { memoryToPrompt, useAiMemory } from "@/hooks/useAiMemory";
+import { useRequireAiConsent } from "@/components/consent/aiConsentContext";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
 const AssistenteIA = () => {
+  const requireAiConsent = useRequireAiConsent();
   const { user } = useAuth();
   const today = todayISO();
   const weekAgo = useMemo(() => {
@@ -132,6 +134,7 @@ const AssistenteIA = () => {
   const send = async (text?: string) => {
     const content = (text ?? input).trim();
     if (!content || loading || !user) return;
+    if (!(await requireAiConsent())) return;
     const userMsg: Msg = { role: "user", content };
     const newMsgs = [...messages, userMsg];
     setMessages(newMsgs);

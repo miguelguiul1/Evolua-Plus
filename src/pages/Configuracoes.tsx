@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Sun, Moon, Monitor, User, Bell, Ruler, Download, Trash2, KeyRound, LogOut } from "lucide-react";
+import { Sun, Moon, Monitor, User, Bell, Ruler, Download, Trash2, KeyRound, LogOut, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { clearStoredPlano } from "@/lib/planoStorage";
 import { resolveAppUrl } from "@/lib/appUrl";
+import ConsentSettings from "@/components/consent/ConsentSettings";
 
 type Prefs = {
   peso: "kg" | "lb";
@@ -255,6 +256,10 @@ const Configuracoes = () => {
               </div>
             </div>
 
+          </Section>
+
+          <Section icon={ShieldCheck} title="Privacidade e consentimentos">
+            <ConsentSettings />
           </Section>
 
           <Section icon={Ruler} title="Preferências">

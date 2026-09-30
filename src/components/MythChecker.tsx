@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Send, Loader2, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { FunctionsHttpError } from "@supabase/supabase-js";
+import { useRequireAiConsent } from "@/components/consent/aiConsentContext";
 
 type Result = {
   veredicto: string;
@@ -10,6 +11,7 @@ type Result = {
 };
 
 const MythChecker = () => {
+  const requireAiConsent = useRequireAiConsent();
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
@@ -17,6 +19,7 @@ const MythChecker = () => {
 
   const check = async () => {
     if (!question.trim() || loading) return;
+    if (!(await requireAiConsent())) return;
 
     setLoading(true);
     setError(null);

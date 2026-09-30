@@ -13,6 +13,7 @@ import { MEAL_TYPES, todayISO, useSyncModules } from "@/hooks/useNutrition";
 import { compressImage } from "@/lib/compressImage";
 import { RANGES, checkRange, firstError } from "@/lib/validation";
 import CameraCapture from "@/components/CameraCapture";
+import { useRequireAiConsent } from "@/components/consent/aiConsentContext";
 
 interface Macros {
   calorias: number; proteina: number; carboidratos: number; gorduras: number; fibras: number; acucares?: number;
@@ -58,6 +59,7 @@ const validateNutrition = (calories: number, protein: number, carbs: number, fat
   ]);
 
 const FoodScanner = () => {
+  const requireAiConsent = useRequireAiConsent();
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -112,6 +114,7 @@ const FoodScanner = () => {
 
   const analyze = async () => {
     if (!image) return;
+    if (!(await requireAiConsent())) return;
     setAnalyzing(true);
     setErrorMsg(null);
     try {

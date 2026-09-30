@@ -3,6 +3,8 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/useAuth";
 import { useSetupStatus } from "@/hooks/useOnboarding";
 import { Button } from "@/components/ui/button";
+import ConsentScreen from "@/components/consent/ConsentScreen";
+import { useConsent } from "@/hooks/useConsent";
 
 const Spinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -26,9 +28,20 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
   const { data: setup, isLoading: setupLoading, isError, refetch } = useSetupStatus();
+  const consent = useConsent();
 
   if (loading) return <Spinner />;
   if (!user) return <Navigate to="/auth" replace />;
+
+  // Configurações fica sempre acessível: é onde a pessoa exporta, exclui a conta ou revoga
+  // o consentimento (LGPD art. 18), mesmo sem ter consentido nem concluído o onboarding.
+  const onSettings = location.pathname === "/configuracoes";
+  if (onSettings) return <>{children}</>;
+
+  // Consentimento para dados de saúde vem antes de tudo (inclusive do onboarding).
+  if (consent.loading) return <Spinner />;
+  if (!consent.health) return <ConsentScreen />;
+
   if (setupLoading) return <Spinner />;
   if (isError) return <SetupError onRetry={() => refetch()} />;
   if (!setup) return <Spinner />;

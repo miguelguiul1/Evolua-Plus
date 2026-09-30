@@ -16,6 +16,7 @@ import { loadStoredPlano, saveStoredPlano } from "@/lib/planoStorage";
 import { dedupeFoods, extractFoodFromIngredient } from "@/lib/foodPreferences";
 import { hasDisliked, mergeDisliked } from "@/lib/dislikedFoods";
 import { ALL_FOODS } from "@/data/preferencias";
+import { useRequireAiConsent } from "@/components/consent/aiConsentContext";
 
 const GRID_FOODS = Object.values(ALL_FOODS).flat();
 
@@ -94,6 +95,7 @@ const extrairErro = async (e: unknown): Promise<string> => {
 };
 
 const PlanoSemanal = () => {
+  const requireAiConsent = useRequireAiConsent();
   const [plano, setPlano] = useState<PlanoSemanal | null>(null);
   const [notes, setNotes] = useState("");
   const [generating, setGenerating] = useState(false);
@@ -159,6 +161,7 @@ const PlanoSemanal = () => {
 
   /** Preferências ficam no servidor — enviamos apenas observação livre opcional. */
   const generatePlan = async () => {
+    if (!(await requireAiConsent())) return;
     setGenerating(true);
     setError(null);
     try {
@@ -183,6 +186,7 @@ const PlanoSemanal = () => {
 
   const swapMeal = async (dia: string, ref: Refeicao) => {
     const key = mealKey(dia, ref.tipo);
+    if (!(await requireAiConsent())) return;
     setSwapping(key);
     try {
       // Contexto (preferências, memória) é carregado pelo backend.
