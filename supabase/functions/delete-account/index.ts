@@ -46,11 +46,15 @@ Deno.serve(async (req) => {
       'progress_photos', 'food_log', 'water_log', 'weight_log', 'scan_history',
       'chat_messages', 'ai_insights', 'ai_memory', 'food_favorites',
       'user_preferences', 'user_goals', 'meal_plans', 'global_favorites', 'user_routine_profile',
+      'user_consents',
     ]
     for (const t of tables) {
       const { error } = await admin.from(t).delete().eq('user_id', userId)
       // Tabela ainda não criada (migration não aplicada) não deve abortar a exclusão.
-      if (error && !/relation .* does not exist/i.test(error.message)) throw new Error(`${t}: ${error.message}`)
+      // Postgres responde 42P01; o PostgREST, PGRST205 ("schema cache").
+      const missingTable = error && (error.code === 'PGRST205' || error.code === '42P01' ||
+        /relation .* does not exist|schema cache/i.test(error.message))
+      if (error && !missingTable) throw new Error(`${t}: ${error.message}`)
     }
     const { error: profileError } = await admin.from('profiles').delete().eq('id', userId)
     if (profileError) throw new Error(`profiles: ${profileError.message}`)
