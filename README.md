@@ -1,73 +1,52 @@
-# Welcome to your Lovable project
+# Evolua Plus
 
-## Project info
+Um app de nutrição que monta seu plano alimentar com IA em menos de dois minutos, respeitando seu objetivo, suas restrições e a sua rotina.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+![Tela inicial do Evolua Plus](docs/screenshot.png)
 
-## How can I edit this code?
+**No ar:** https://balanced-you-plan.vercel.app
 
-There are several ways of editing your application.
+## Por que eu fiz
 
-**Use Lovable**
+Consulta com nutricionista é cara, e a maioria dos apps de dieta só conta calorias e te deixa sozinho na hora de decidir o que comer. Eu queria algo que fizesse o caminho inteiro: entender o que a pessoa quer, sugerir um cardápio que ela consiga seguir, trocar uma refeição quando não dá e mostrar a evolução ao longo das semanas.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+É o meu projeto pessoal mais completo: tem autenticação, banco, funções de IA no servidor, PWA e empacotamento para Android e iOS. Construí com o Lovable e fui refinando o código e a publicação nas lojas.
 
-Changes made via Lovable will be committed automatically to this repo.
+## O que ele faz
 
-**Use your preferred IDE**
+- **Plano personalizado:** onboarding curto e um plano semanal gerado a partir das respostas.
+- **Troca de refeição:** não gostou de um prato? A IA sugere outro com os mesmos macros.
+- **Scanner:** foto do prato ou da geladeira vira estimativa de porção e ideias de receita.
+- **Diário e evolução:** registro do que foi comido, metas de água e gráficos semanais.
+- **Assistente:** chat de nutrição e um "caça-mitos" para as dúvidas do dia a dia.
+- **App nativo:** o mesmo código roda como PWA e como app Android/iOS via Capacitor.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Tecnologias
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+React, TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query, Supabase (Auth, Postgres e Edge Functions), Capacitor, Vitest. Deploy na Vercel.
 
-Follow these steps:
+## Rodando localmente
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Precisa de Node 20+ e de um projeto no Supabase.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+git clone https://github.com/miguelguiul1/Evolua-Plus.git
+cd Evolua-Plus
+npm install
+cp .env.example .env   # preencha com a URL e a chave publicável do seu Supabase
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Outros comandos úteis:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+npm test            # testes com Vitest
+npm run build       # build de produção
+npm run android     # abre o projeto Android (depois de npm run build:app)
+```
 
-**Use GitHub Codespaces**
+As migrations e as Edge Functions ficam em `supabase/`. O passo a passo de publicação nas lojas está em [`PUBLICACAO.md`](PUBLICACAO.md).
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Licença
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+[MIT](LICENSE)
