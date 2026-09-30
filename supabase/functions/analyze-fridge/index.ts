@@ -1,6 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, validateImage } from "../_shared/guard.ts";
 import { loadUserContext } from "../_shared/userContext.ts";
+import { buildForbiddenPromptLine, buildForbiddenTerms } from "../_shared/foodPreferences.ts";
+import { AIHttpError, guardHeader } from "../_shared/aiGuard.ts";
+import { runFridgeGuard } from "../_shared/recipeGuards.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -29,9 +32,14 @@ serve(async (req) => {
       const parts: string[] = [];
       if (ctx.preferences.objective) parts.push(`Objetivo do usuário: ${ctx.preferences.objective}`);
       if (ctx.preferences.restrictions?.length) parts.push(`Restrições alimentares: ${ctx.preferences.restrictions.join(", ")}`);
-      if (ctx.preferences.disliked_foods?.length) parts.push(`Alimentos que NÃO gosta (NUNCA use nas receitas): ${ctx.preferences.disliked_foods.join(", ")}`);
-      if (ctx.preferences.liked_foods?.length) parts.push(`Alimentos preferidos (priorize nas receitas): ${ctx.preferences.liked_foods.join(", ")}`);
+      if (ctx.preferences.liked_foods?.length) parts.push(`Alimentos preferidos (priorize nas receitas, exceto se proibidos): ${ctx.preferences.liked_foods.join(", ")}`);
       if (parts.length) preferencesContext = `\n\nPERFIL DO USUÁRIO:\n${parts.join("\n")}`;
+    }
+    // Vale só para as RECEITAS sugeridas: os alimentos da foto são o que a pessoa tem.
+    const forbiddenTerms = buildForbiddenTerms(ctx.preferences?.disliked_foods ?? [], ctx.preferences?.restrictions ?? []);
+    const forbiddenBlock = buildForbiddenPromptLine(forbiddenTerms);
+    if (forbiddenBlock) {
+      preferencesContext += `\n\nALIMENTOS PROIBIDOS NAS RECEITAS (liste-os normalmente em "alimentos" se estiverem na foto, mas NUNCA os use nas receitas):\n${forbiddenBlock}`;
     }
 
     const systemPrompt = `Você é o Evolua Plus AI, assistente de nutrição baseado em IA (NÃO é nutricionista, médico nem profissional de saúde; nunca afirme formação, registro profissional ou identidade humana). Todos os valores nutricionais são ESTIMATIVAS. Analise a foto da geladeira e retorne APENAS um JSON válido (sem markdown, sem backticks) com esta estrutura:
@@ -49,71 +57,66 @@ Regras:
 - Calorias são por porção/100g
 - Responda SOMENTE com o JSON, sem texto adicional${preferencesContext}`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Analise esta foto da geladeira e identifique os alimentos. Retorne o JSON com alimentos, receitas e dicas." },
-              { type: "image_url", image_url: { url: imageBase64 } },
-            ],
-          },
-        ],
-      }),
-    });
+    const userText = "Analise esta foto da geladeira e identifique os alimentos. Retorne o JSON com alimentos, receitas e dicas.";
 
-    if (!response.ok) {
-      if (response.status === 429) {
+    /** Uma chamada à IA (a foto vai de novo na regeneração). */
+    const callAI = async (feedback: string | null): Promise<string> => {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemPrompt },
+            {
+              role: "user",
+              content: [
+                { type: "text", text: feedback ? `${userText}\n\n${feedback}` : userText },
+                { type: "image_url", image_url: { url: imageBase64 } },
+              ],
+            },
+          ],
+        }),
+      });
+      if (!response.ok) throw new AIHttpError(response.status, await response.text());
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content || "";
+    };
+
+    let guarded;
+    try {
+      guarded = await runFridgeGuard({ callAI, terms: forbiddenTerms, timeBudgetMs: 45_000 });
+    } catch (e) {
+      if (!(e instanceof AIHttpError)) throw e;
+      if (e.status === 429) {
         return new Response(JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (response.status === 402) {
+      if (e.status === 402) {
         return new Response(JSON.stringify({ error: "Créditos de IA esgotados. Adicione créditos ao workspace." }), {
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
+      console.error("AI gateway error:", e.status, e.body);
       return new Response(JSON.stringify({ error: "Erro ao processar a imagem" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "";
-
-    let parsed;
-    try {
-      const cleanContent = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-      parsed = JSON.parse(cleanContent);
-    } catch {
-      console.error("Failed to parse AI response:", content);
+    // Shape esperado (alimentos, receitas e dicas como arrays) é checado no parse.
+    if (!guarded.value) {
+      console.error("Failed to parse AI response (JSON inválido ou formato inesperado)");
       return new Response(JSON.stringify({ error: "Erro ao interpretar a resposta da IA" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Shape esperado: JSON com alimentos, receitas e dicas como arrays.
-    const hasValidShape =
-      parsed && Array.isArray(parsed.alimentos) && Array.isArray(parsed.receitas) && Array.isArray(parsed.dicas);
-    if (!hasValidShape) {
-      console.error("Unexpected AI shape:", content.substring(0, 300));
-      return new Response(JSON.stringify({ error: "Erro ao interpretar a resposta da IA" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    return new Response(JSON.stringify(parsed), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify(guarded.value), {
+      headers: { ...corsHeaders, "Content-Type": "application/json", ...guardHeader(guarded) },
     });
   } catch (e) {
     console.error("analyze-fridge error:", e);

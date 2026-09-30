@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/useAuth";
@@ -11,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff, Leaf, Heart, Sparkles } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 import { lovable } from "@/integrations/lovable/index";
+import { isNativeGoogleAvailable, signInWithGoogleNative } from "@/lib/nativeGoogleAuth";
 
 
 
@@ -59,6 +61,22 @@ const Auth = () => {
   const handleGoogle = async () => {
     setGoogleLoading(true);
     try {
+      // No app nativo (com a flag VITE_ENABLE_NATIVE_GOOGLE ligada), usamos Supabase OAuth
+      // direto + deep link em vez do broker web da Lovable — ver src/lib/nativeGoogleAuth.ts.
+      if (isNativeGoogleAvailable()) {
+        const { error } = await signInWithGoogleNative();
+        if (error) {
+          toast({
+            title: "Não foi possível entrar com Google",
+            description: "Tente novamente em instantes ou use seu e-mail.",
+            variant: "destructive",
+          });
+        }
+        // Sucesso: o navegador do sistema assume; a sessão chega pelo deep link
+        // (registerNativeGoogleDeepLink) e o AuthProvider navega automaticamente.
+        return;
+      }
+
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
@@ -295,7 +313,10 @@ const Auth = () => {
             </Button>
           </form>
 
-          {!isForgot && (
+          {/* Login com Google via Lovable depende de um redirect web (não funciona dentro
+              do app nativo empacotado, cuja origem é local); some no APK/AAB, exceto
+              quando VITE_ENABLE_NATIVE_GOOGLE=true habilita o fluxo nativo alternativo. */}
+          {!isForgot && (!Capacitor.isNativePlatform() || isNativeGoogleAvailable()) && (
             <>
               <div className="my-6 flex items-center gap-3">
                 <span className="h-px flex-1 bg-border" />

@@ -38,6 +38,11 @@ android/build
 ios/App/build
 ios/App/App/public
 
+# Assinatura de release (Android) — NUNCA versionar keystore nem senhas
+android/keystore.properties
+*.jks
+*.keystore
+
 # TypeScript incremental build info
 *.tsbuildinfo
 

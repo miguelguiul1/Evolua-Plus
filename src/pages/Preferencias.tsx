@@ -5,11 +5,17 @@ import MotivationalQuote from "@/components/MotivationalQuote";
 import { useAuth } from "@/contexts/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSyncModules } from "@/hooks/useNutrition";
 import { ALL_FOODS, RESTRICTIONS } from "@/data/preferencias";
 import { OBJECTIVES, normalizeObjective, objectiveOption } from "@/lib/objectives";
+import DislikedFoodsEditor from "@/components/preferencias/DislikedFoodsEditor";
+import { extractRestriction } from "@/lib/foodPreferences";
+import { findMealsWithFoods, hasDisliked, newlyAdded, type MealWithFood } from "@/lib/dislikedFoods";
+import { loadStoredPlano } from "@/lib/planoStorage";
+
+const GRID_FOODS = Object.values(ALL_FOODS).flat();
 
 const Preferencias = () => {
   const sync = useSyncModules();
@@ -24,6 +30,11 @@ const Preferencias = () => {
   const [loadError, setLoadError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [objectiveError, setObjectiveError] = useState(false);
+  // Última versão salva: base para avisar se o plano atual já tem um alimento recém-marcado.
+  const [savedDisliked, setSavedDisliked] = useState<string[]>([]);
+  const [savedRestrictions, setSavedRestrictions] = useState<string[]>([]);
+  const [planWarning, setPlanWarning] = useState<MealWithFood[]>([]);
+  const location = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -55,7 +66,9 @@ const Preferencias = () => {
         setSelectedObjective(normalizeObjective(data.objective) ?? "");
         setLiked(data.liked_foods || []);
         setDisliked(data.disliked_foods || []);
+        setSavedDisliked(data.disliked_foods || []);
         const all = data.restrictions || [];
+        setSavedRestrictions(all);
         setSelectedRestrictions(all.filter((r: string) => RESTRICTIONS.includes(r)));
         const other = all.find((r: string) => !RESTRICTIONS.includes(r));
         if (other) setOtherRestriction(other);
@@ -67,6 +80,20 @@ const Preferencias = () => {
   }, [user, retryKey]);
 
   const busy = saving || loading;
+
+  // Atalho "Ver minha lista" (/preferencias#nao-gosto) vindo do Plano Semanal.
+  useEffect(() => {
+    if (loading || location.hash !== "#nao-gosto") return;
+    document.getElementById("nao-gosto")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [loading, location.hash]);
+
+  /** Grade e texto livre alimentam a mesma lista; o que entra em "não gosto" sai de "gosto". */
+  const changeDisliked = (next: string[]) => {
+    setDisliked(next);
+    setLiked((prev) => prev.filter((l) => !hasDisliked(next, l)));
+  };
+
+  const otherRestrictionInfo = otherRestriction.trim() ? extractRestriction(otherRestriction) : null;
 
   const toggleLiked = (food: string) => {
     setDisliked((prev) => prev.filter((f) => f !== food));
@@ -115,6 +142,19 @@ const Preferencias = () => {
         }, { onConflict: "user_id" });
       if (error) throw error;
       sync(["prefs"]);
+
+      // Plano já salvo com alimento recém-marcado: só avisa. Nada é apagado nem regenerado.
+      const addedFoods = newlyAdded(savedDisliked, disliked);
+      const addedRestrictions = newlyAdded(savedRestrictions, allRestrictions);
+      setSavedDisliked(disliked);
+      setSavedRestrictions(allRestrictions);
+      if (addedFoods.length || addedRestrictions.length) {
+        loadStoredPlano(user.id)
+          .then((saved) => setPlanWarning(findMealsWithFoods(saved?.plano, addedFoods, addedRestrictions)))
+          .catch(() => setPlanWarning([]));
+      } else {
+        setPlanWarning([]);
+      }
       // O objetivo influencia o onboarding/setup status — mantém tudo consistente.
       qc.invalidateQueries({ queryKey: ["setupStatus"] });
       toast({
@@ -225,6 +265,15 @@ const Preferencias = () => {
             maxLength={100}
             className="mt-3 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
+          {otherRestriction.trim() && (
+            <p className="mt-1.5 text-xs text-muted-foreground" aria-live="polite">
+              {otherRestrictionInfo?.foods.length
+                ? `Entendido: a IA nunca vai usar ${otherRestrictionInfo.foods.join(", ")}.`
+                : otherRestrictionInfo
+                  ? "Entendido: a IA vai respeitar essa restrição."
+                  : "Vamos repassar essa restrição à IA. Para alergias, escreva no formato \"Alergia a camarão\" para bloquear o alimento com segurança."}
+            </p>
+          )}
         </div>
 
         {/* Foods */}
@@ -281,6 +330,13 @@ const Preferencias = () => {
               </div>
             </div>
           ))}
+
+          <DislikedFoodsEditor
+            disliked={disliked}
+            onChange={changeDisliked}
+            gridFoods={GRID_FOODS}
+            disabled={busy}
+          />
         </div>
 
         {/* Summary */}
@@ -308,6 +364,17 @@ const Preferencias = () => {
               <p className="font-medium text-destructive">{disliked.length} marcados</p>
             </div>
           </div>
+          {planWarning.length > 0 && (
+            <div role="alert" className="mt-6 rounded-xl bg-accent/10 border border-accent/30 p-4 text-sm">
+              <p className="text-foreground">
+                Seu plano atual tem {planWarning.length} {planWarning.length === 1 ? "refeição" : "refeições"} com{" "}
+                {[...new Set(planWarning.flatMap((m) => m.foods))].join(", ")}. Nada foi alterado — você decide o que trocar.
+              </p>
+              <Link to="/plano-semanal" className="inline-block mt-2 text-primary font-medium underline">
+                Ver plano
+              </Link>
+            </div>
+          )}
           <Button variant="hero" size="lg" className="w-full mt-6" onClick={handleSave} disabled={busy}>
             {saving ? "Salvando..." : loading ? "Carregando..." : "Salvar preferências"}
           </Button>

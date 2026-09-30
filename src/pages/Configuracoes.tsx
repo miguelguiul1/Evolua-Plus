@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Sun, Moon, Monitor, User, Bell, Ruler, Download, Trash2, KeyRound, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -278,6 +278,12 @@ const Configuracoes = () => {
               ))}
             </div>
           </Section>
+
+          <div className="flex justify-center gap-4 pt-2 text-xs text-muted-foreground">
+            <Link to="/termos" className="hover:text-primary transition-colors">Termos de uso</Link>
+            <span aria-hidden>·</span>
+            <Link to="/privacidade" className="hover:text-primary transition-colors">Política de privacidade</Link>
+          </div>
         </div>
       </div>
     </div>

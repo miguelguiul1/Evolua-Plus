@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, Lightbulb, RefreshCw, ChevronDown, ChevronUp, FileDown, Plus, Shuffle, AlertTriangle, Target, Sparkles, Dumbbell, Droplets, ShieldCheck } from "lucide-react";
+import { Calendar, Lightbulb, RefreshCw, ChevronDown, ChevronUp, FileDown, Plus, Shuffle, AlertTriangle, Target, Sparkles, Dumbbell, Droplets, ShieldCheck, ThumbsDown, Check } from "lucide-react";
 import { useAuth } from "@/contexts/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { FunctionsHttpError } from "@supabase/supabase-js";
@@ -9,10 +9,19 @@ import { Link } from "react-router-dom";
 import MotivationalQuote from "@/components/MotivationalQuote";
 import SmartShoppingList from "@/components/plano/SmartShoppingList";
 import { exportPdfCompat } from "@/lib/pdfExport";
-import { todayISO, useGoals, usePreferences } from "@/hooks/useNutrition";
+import { todayISO, useGoals, usePreferences, useSyncModules } from "@/hooks/useNutrition";
 import { useRoutineProfile } from "@/hooks/useRoutineProfile";
 import { normalizeObjective, objectiveOption } from "@/lib/objectives";
 import { loadStoredPlano, saveStoredPlano } from "@/lib/planoStorage";
+import { dedupeFoods, extractFoodFromIngredient } from "@/lib/foodPreferences";
+import { hasDisliked, mergeDisliked } from "@/lib/dislikedFoods";
+import { ALL_FOODS } from "@/data/preferencias";
+
+const GRID_FOODS = Object.values(ALL_FOODS).flat();
+
+/** Chips do "não gosto": o prato e cada ingrediente sem quantidade/unidade. */
+const dislikeChips = (ref: { nome: string; ingredientes?: string[] }) =>
+  dedupeFoods([ref.nome, ...(ref.ingredientes ?? []).map(extractFoodFromIngredient)].filter(Boolean));
 
 interface OpcaoRefeicao {
   nome: string;
@@ -93,6 +102,12 @@ const PlanoSemanal = () => {
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
   const [expandedMeal, setExpandedMeal] = useState<string | null>(null);
   const [swapping, setSwapping] = useState<string | null>(null);
+  // "Não gosto de um alimento desta receita": painel aberto, último item adicionado e cópia local da lista.
+  const [dislikeOpen, setDislikeOpen] = useState<string | null>(null);
+  const [dislikeAdded, setDislikeAdded] = useState<{ key: string; food: string; already?: boolean } | null>(null);
+  const [savingDislike, setSavingDislike] = useState(false);
+  const [localDisliked, setLocalDisliked] = useState<string[] | null>(null);
+  const sync = useSyncModules();
   const { user } = useAuth();
   const { toast } = useToast();
   const userId = user?.id ?? null;
@@ -208,6 +223,54 @@ const PlanoSemanal = () => {
       });
     } finally {
       setSwapping(null);
+    }
+  };
+
+  const currentDisliked = localDisliked ?? prefsData?.disliked_foods ?? [];
+
+  /**
+   * Adiciona o alimento à lista de "não gosto" e oferece a troca — nada é trocado sozinho.
+   * Lê a lista direto do banco antes de gravar para não sobrescrever com cache antigo.
+   */
+  const addDislikedFood = async (food: string, key: string) => {
+    if (!user) {
+      toast({ title: "Faça login", description: "Entre para salvar suas preferências." });
+      return;
+    }
+    setSavingDislike(true);
+    try {
+      const { data: row, error: readError } = await supabase
+        .from("user_preferences")
+        .select("disliked_foods, liked_foods")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (readError) throw readError;
+      const current = row?.disliked_foods ?? [];
+      if (hasDisliked(current, food)) {
+        setLocalDisliked(current);
+        setDislikeAdded({ key, food, already: true });
+        return;
+      }
+      const next = mergeDisliked(current, [food], GRID_FOODS);
+      const liked = (row?.liked_foods ?? []).filter((l) => !hasDisliked(next, l));
+      const { error } = await supabase
+        .from("user_preferences")
+        .upsert(
+          { user_id: user.id, disliked_foods: next, liked_foods: liked, updated_at: new Date().toISOString() },
+          { onConflict: "user_id" }
+        );
+      if (error) throw error;
+      setLocalDisliked(next);
+      sync(["prefs"]);
+      setDislikeAdded({ key, food });
+    } catch (e: unknown) {
+      toast({
+        title: "Não consegui salvar",
+        description: e instanceof Error ? e.message : "Tente novamente em instantes.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingDislike(false);
     }
   };
 
@@ -569,6 +632,69 @@ const PlanoSemanal = () => {
                                   <><Shuffle className="w-4 h-4" /> Não gostei, trocar refeição</>
                                 )}
                               </Button>
+                              <button
+                                type="button"
+                                className="w-full py-1 text-xs text-muted-foreground hover:text-foreground hover:underline underline-offset-2 disabled:opacity-60"
+                                aria-expanded={dislikeOpen === key}
+                                disabled={prefsLoading}
+                                onClick={() => {
+                                  setDislikeOpen(dislikeOpen === key ? null : key);
+                                  setDislikeAdded(null);
+                                }}
+                              >
+                                <ThumbsDown className="w-3 h-3 inline mr-1" aria-hidden="true" />
+                                Não gosto de um alimento desta receita
+                              </button>
+                              {dislikeOpen === key && (
+                                <div className="rounded-lg bg-secondary/50 p-3 space-y-2">
+                                  <p className="text-xs text-muted-foreground">
+                                    Toque no que você não gosta. Ele entra na sua lista e a IA passa a evitá-lo nos próximos planos e trocas.
+                                  </p>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {dislikeChips(ref).map((food) => {
+                                      const marked = hasDisliked(currentDisliked, food);
+                                      return (
+                                        <button
+                                          key={food}
+                                          type="button"
+                                          disabled={marked || savingDislike}
+                                          aria-pressed={marked}
+                                          onClick={() => addDislikedFood(food, key)}
+                                          className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all disabled:cursor-default ${
+                                            marked
+                                              ? "bg-destructive/10 border-destructive text-destructive"
+                                              : "bg-background border-border text-foreground hover:border-destructive/40"
+                                          }`}
+                                        >
+                                          {food}
+                                          {marked && <Check className="w-3 h-3 inline ml-1" aria-hidden="true" />}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                  {dislikeAdded?.key === key && (
+                                    <div className="flex flex-wrap items-center gap-2 text-xs text-foreground" role="status">
+                                      <span>
+                                        {dislikeAdded.already
+                                          ? `“${dislikeAdded.food}” já estava na sua lista.`
+                                          : `“${dislikeAdded.food}” foi adicionado à sua lista. Nada foi trocado.`}
+                                      </span>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 gap-1"
+                                        disabled={swapping === key}
+                                        onClick={() => swapMeal(dia.dia, ref)}
+                                      >
+                                        <Shuffle className="w-3 h-3" /> Trocar agora
+                                      </Button>
+                                      <Link to="/preferencias#nao-gosto" className="text-primary underline">
+                                        Ver minha lista
+                                      </Link>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Cores da marca Evolua Plus (mesmas do theme_color do PWA e do design system web). -->
+    <color name="colorPrimary">#2D6A4F</color>
+    <color name="colorPrimaryDark">#1B4332</color>
+    <color name="colorAccent">#2D6A4F</color>
+</resources>
