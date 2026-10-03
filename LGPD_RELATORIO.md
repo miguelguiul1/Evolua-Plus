@@ -9,6 +9,15 @@ Data: 30/09/2026 · Branch: `chore/lgpd` (criada a partir de `chore/seguranca` e
 
 Nada foi aplicado no banco, não houve deploy e o Supabase de produção não foi usado.
 
+> **Atualização 03/10/2026 (branch `chore/migracao-supabase`):** a IA saiu do Lovable AI Gateway.
+> As 8 funções chamam a **API Gemini do Google** direto, pelo módulo
+> `supabase/functions/_shared/aiClient.ts`, e o chat deixou de usar OpenAI. Política, texto do
+> consentimento e mapa de dados foram atualizados, e `CONSENT_VERSION` foi para `2026-10-03`, então
+> todo usuário que já tinha consentido será convidado a consentir de novo. **Use uma chave de projeto
+> Google Cloud COM faturamento ativo**: no plano gratuito da API Gemini, o Google usa o conteúdo
+> enviado para melhorar produtos e revisores humanos podem lê-lo, o que não é aceitável para dados
+> de saúde (ver a seção 4.2).
+
 Documentos relacionados: [`LGPD_MAPA_DADOS.md`](LGPD_MAPA_DADOS.md) (mapa de dados) e
 [`SECURITY_AUDIT.md`](SECURITY_AUDIT.md) (auditoria de segurança).
 
@@ -30,7 +39,7 @@ Documentos relacionados: [`LGPD_MAPA_DADOS.md`](LGPD_MAPA_DADOS.md) (mapa de dad
 
 **Duas finalidades, duas caixas separadas, nenhuma pré-marcada:**
 1. **Dados de saúde** (`health_data`): obrigatório para usar o app, porque tudo nele depende desses dados.
-2. **Envio aos provedores de IA** (`ai_processing`): opcional; obrigatório só para as funções de IA.
+2. **Envio ao provedor de IA** (`ai_processing`, hoje o Google Gemini): opcional; obrigatório só para as funções de IA.
    Só pode ser marcado depois do 1.
 
 **Quando é pedido:**
@@ -150,15 +159,20 @@ SDK de rastreamento.
 3. Preencher os placeholders (lista na seção 6).
 
 ### 4.2 Confirmações com fornecedores
-1. **Lovable** (AI Gateway e Cloud Auth): contrato ou DPA, países de processamento, retenção dos
-   prompts e se há uso para treino.
-2. **Google (Gemini)** e **OpenAI**, via Lovable: as mesmas perguntas. Confirme quais termos se
-   aplicam quando o acesso é pelo gateway.
+1. **Google (API Gemini)**, que é o provedor de IA desde 03/10/2026:
+   - **gere a chave num projeto do Google Cloud com faturamento ativo** ("Paid Services"). Pelos
+     [termos adicionais da API Gemini](https://ai.google.dev/gemini-api/terms), no uso gratuito o Google
+     usa entradas e respostas para melhorar produtos e revisores humanos podem lê-las; no uso pago,
+     não;
+   - confirme a retenção dos dados no uso pago ([Data logging and sharing](https://ai.google.dev/gemini-api/docs/logs-policy)),
+     os países de processamento, o DPA ou os termos de processamento de dados do Google Cloud, e
+     as restrições de idade e de público dos termos (o app já exige 18+).
+2. **Lovable** (Cloud Auth, login com Google na web): contrato ou DPA e países de processamento.
 3. **Supabase**: região do projeto (Settings → General) e retenção de backups (Database → Backups)
    e de logs.
 4. **Vercel**: retenção de logs de acesso.
 5. Com isso, preencher `[PAISES_DE_PROCESSAMENTO]`, `[REGIAO_DOS_SERVIDORES]`,
-   `[CONFIRMAR_MECANISMO_DE_TRANSFERENCIA]`, `[CONFIRMAR_TERMOS_DOS_PROVEDORES_DE_IA]`,
+   `[CONFIRMAR_MECANISMO_DE_TRANSFERENCIA]`, `[CONFIRMAR_TERMOS_DO_GOOGLE_GEMINI_API]`,
    `[PRAZO_BACKUPS]` e `[PRAZO_LOGS_DE_ACESSO]`.
 
 ### 4.3 Ordem segura de publicação
@@ -227,8 +241,8 @@ Os placeholders estão em `src/pages/Privacidade.tsx` e `src/pages/Termos.tsx`.
 | `[ENDERECO_DO_CONTROLADOR]` | Privacidade §1 | endereço para correspondência |
 | `[NOME_DO_ENCARREGADO]` | Privacidade §1 | nome do encarregado (DPO) |
 | `[EMAIL_DE_CONTATO]` | Privacidade §1 e §8 (2×); Termos §12 | e-mail do encarregado e de contato |
-| `[CONFIRMAR_TERMOS_DOS_PROVEDORES_DE_IA]` | Privacidade §4 | o que os contratos dizem sobre retenção e treino |
-| `[PAISES_DE_PROCESSAMENTO]` | Privacidade §6 | países onde Lovable, Google e OpenAI processam |
+| `[CONFIRMAR_TERMOS_DO_GOOGLE_GEMINI_API]` | Privacidade §4 | o que os termos da API Gemini (uso pago) dizem sobre retenção e treino |
+| `[PAISES_DE_PROCESSAMENTO]` | Privacidade §6 | países onde o Google (API Gemini) e os demais operadores processam |
 | `[REGIAO_DOS_SERVIDORES]` | Privacidade §6 | região do projeto Supabase |
 | `[CONFIRMAR_MECANISMO_DE_TRANSFERENCIA]` | Privacidade §6 | cláusulas-padrão, consentimento etc. (art. 33) |
 | `[PRAZO_BACKUPS]` | Privacidade §7 | retenção dos backups do Supabase |

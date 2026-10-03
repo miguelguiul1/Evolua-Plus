@@ -15,7 +15,7 @@
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-export const CONSENT_VERSION = "2026-09-30";
+export const CONSENT_VERSION = "2026-10-03";
 
 export type ConsentPurpose = "health_data" | "ai_processing";
 export const CONSENT_PURPOSES: ConsentPurpose[] = ["health_data", "ai_processing"];
@@ -34,9 +34,9 @@ export const CONSENT_TEXT: Record<ConsentPurpose, { label: string; detail: strin
   },
   ai_processing: {
     label:
-      "Autorizo o envio dos meus dados de saúde e alimentação aos provedores de inteligência artificial (Lovable AI Gateway, Google Gemini e OpenAI) para gerar planos, respostas do assistente, análises de fotos e estimativas nutricionais.",
+      "Autorizo o envio dos meus dados de saúde e alimentação ao provedor de inteligência artificial Google (modelos Gemini, pela API Gemini) para gerar planos, respostas do assistente, análises de fotos e estimativas nutricionais.",
     detail:
-      "Só vai para a IA o necessário para cada função (por exemplo: objetivo, metas, restrições, a foto enviada ou a sua pergunta). Seu nome e seu e-mail não são enviados. Esses provedores podem processar os dados fora do Brasil.",
+      "Só vai para a IA o necessário para cada função (por exemplo: objetivo, metas, restrições, a foto enviada ou a sua pergunta). Seu nome e seu e-mail não são enviados. O Google pode processar os dados fora do Brasil.",
     onRevoke:
       "Sem esta autorização deixam de funcionar: assistente de IA, plano alimentar e troca de refeição, scanner de alimentos, porções e geladeira, verificador de mitos, estimativa automática de calorias no diário e análise do dia. O restante do app continua funcionando.",
   },

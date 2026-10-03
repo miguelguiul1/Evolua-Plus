@@ -1,6 +1,6 @@
 # Mapa de dados pessoais — Evolua Plus
 
-Data: 30/09/2026 · Branch: `chore/lgpd` · Fonte: leitura do código (migrations, `src/`,
+Data: 30/09/2026, atualizado em 03/10/2026 (IA: Lovable AI Gateway → API Gemini do Google) · Branch: `chore/migracao-supabase` · Fonte: leitura do código (migrations, `src/`,
 `supabase/functions/`). **Nada aqui foi conferido no banco de produção.** Este é um documento
 técnico, não um parecer jurídico.
 
@@ -13,9 +13,7 @@ dado que revela condição física, corpo, hábitos alimentares, restrições ou
 | Destino | Papel (sugestão) | O que recebe | Onde está no código |
 |---|---|---|---|
 | **Supabase** (projeto `icmyqmvcwzdfleuxyiux`) | operador: banco, autenticação, Storage, Edge Functions | todos os dados das tabelas abaixo e as fotos de evolução | `src/integrations/supabase/client.ts`, `supabase/` |
-| **Lovable AI Gateway** (`ai.gateway.lovable.dev`) | operador/suboperador: repassa ao modelo | o conteúdo de cada chamada de IA (seção 3) | todas as Edge Functions de IA, com `LOVABLE_API_KEY` |
-| **Google — Gemini 2.5 Flash** (`google/gemini-2.5-flash`, via gateway) | suboperador | analyze-fridge, food-scan, portion-scanner, myth-checker, nutrition-tracker, meal-plan, meal-swap | `model:` em cada `index.ts` |
-| **OpenAI — `openai/gpt-5.6-sol`** (via gateway) | suboperador | nutrition-chat | `nutrition-chat/index.ts` |
+| **Google — API Gemini** (`generativelanguage.googleapis.com/v1beta/openai`, modelo padrão `gemini-2.5-flash`) | operador: processamento de IA | o conteúdo de cada chamada de IA (seção 3), nas **8** funções de IA, direto das Edge Functions (sem intermediário) | `supabase/functions/_shared/aiClient.ts` (secret `GEMINI_API_KEY`; `AI_MODEL` e `AI_BASE_URL` opcionais) |
 | **Lovable Cloud Auth** (`@lovable.dev/cloud-auth-js`) | operador do login com Google na web | fluxo OAuth (e-mail e nome da conta Google) | `src/integrations/lovable/index.ts`, `Auth.tsx` |
 | **Google (OAuth)** | controlador próprio da conta Google | login, quando a pessoa escolhe "Entrar com Google" | `Auth.tsx`, `lib/nativeGoogleAuth.ts` (desligado) |
 | **Open Food Facts** (`world.openfoodfacts.org`) | terceiro (base pública) | **só o código de barras** e o IP do aparelho; nenhum dado da conta | `components/BarcodeScanner.tsx:129` |
@@ -99,7 +97,7 @@ dados de contexto listados na seção 3.
 
 ## 3. O que cada chamada de IA envia
 
-Todas passam pela Lovable AI Gateway. Nenhuma envia nome, e-mail ou `user_id`.
+Todas vão direto das Edge Functions para a API Gemini do Google, pelo módulo `_shared/aiClient.ts`. Nenhuma envia nome, e-mail ou `user_id`. O modelo é o mesmo em todas (`AI_MODEL`, padrão `gemini-2.5-flash`).
 
 | Função | Modelo | Dados enviados |
 |---|---|---|
@@ -110,8 +108,8 @@ Todas passam pela Lovable AI Gateway. Nenhuma envia nome, e-mail ou `user_id`.
 | `nutrition-tracker` | Gemini 2.5 Flash | `estimate`: alimento e quantidade; `analyze`: diário do dia e objetivo |
 | `meal-plan` | Gemini 2.5 Flash | objetivo, peso, altura, idade, sexo, nível de atividade, esportes, metas de kcal e macros, restrições, gosta e não gosta, perfil de rotina (horários, refeições habituais, treino, notas) |
 | `meal-swap` | Gemini 2.5 Flash | refeição a trocar, motivo, objetivo, meta calórica, restrições, gosta e não gosta, memória da IA |
-| `nutrition-chat` | **OpenAI** `gpt-5.6-sol` | últimas 10 mensagens, objetivo, metas de kcal e proteína, restrições, gosta e não gosta, memória da IA, totais de hoje, resumo de 7 dias (médias e alimentos frequentes), peso atual e variação |
+| `nutrition-chat` | Gemini 2.5 Flash (`reasoning_effort: "none"`) | últimas 10 mensagens, objetivo, metas de kcal e proteína, restrições, gosta e não gosta, memória da IA, totais de hoje, resumo de 7 dias (médias e alimentos frequentes), peso atual e variação |
 
-**Transferência internacional**: o código não mostra em que país a Lovable, o Google e a OpenAI
-processam os dados, nem em que região o projeto Supabase está hospedado. Isso precisa ser confirmado
+**Transferência internacional**: o código não mostra em que país o Google
+processa os dados, nem em que região o projeto Supabase está hospedado. Isso precisa ser confirmado
 nos contratos e no painel. Ver `LGPD_RELATORIO.md`.

@@ -58,7 +58,7 @@ export const AiConsentProvider = ({ children }: { children: ReactNode }) => {
           <DialogHeader>
             <DialogTitle>Autorizar o uso da IA</DialogTitle>
             <DialogDescription>
-              Esta função envia dados a provedores de inteligência artificial. Veja detalhes na{" "}
+              Esta função envia dados ao provedor de inteligência artificial (Google Gemini). Veja detalhes na{" "}
               <Link to="/privacidade" target="_blank" className="text-primary underline">Política de Privacidade</Link>.
             </DialogDescription>
           </DialogHeader>

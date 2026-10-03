@@ -8,7 +8,7 @@ import { CONSENT_TEXT, CONSENT_VERSION, type ConsentPurpose } from "@/lib/consen
 
 const TITLE: Record<ConsentPurpose, string> = {
   health_data: "Tratamento dos dados de saúde",
-  ai_processing: "Envio de dados aos provedores de IA",
+  ai_processing: "Envio de dados ao provedor de IA (Google Gemini)",
 };
 
 const fmt = (iso: string) => {

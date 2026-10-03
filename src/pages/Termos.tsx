@@ -82,7 +82,7 @@ const Termos = () => (
             realizadas na sua conta. Você deve ter pelo menos 18 anos, ou a maioridade civil aplicável no
             seu país, para criar uma conta. Informações fornecidas no cadastro devem ser verdadeiras. Para
             usar o app, você precisa autorizar o tratamento dos seus dados de saúde, e para usar as funções
-            de IA, o envio desses dados aos provedores de IA, como explica a{" "}
+            de IA, o envio desses dados ao provedor de IA, como explica a{" "}
             <Link to="/privacidade" className="text-primary hover:underline">Política de Privacidade</Link>.
           </p>
         </Section>

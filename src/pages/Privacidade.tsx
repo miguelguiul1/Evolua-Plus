@@ -83,7 +83,7 @@ const Privacidade = () => (
           Política de <span className="text-primary">Privacidade</span>
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          Última atualização: 30 de setembro de 2026. Vale para o site e para o aplicativo Evolua Plus
+          Última atualização: 3 de outubro de 2026. Vale para o site e para o aplicativo Evolua Plus
           (Android/iOS).
         </p>
       </header>
@@ -133,7 +133,7 @@ const Privacidade = () => (
               dado na tela “Seus dados de saúde” logo após o cadastro.
             </li>
             <li>
-              <strong>Envio de dados de saúde aos provedores de IA:</strong> um consentimento separado e
+              <strong>Envio de dados de saúde ao provedor de IA:</strong> um consentimento separado e
               opcional (art. 11, I). Ele é pedido quando você usa uma função de IA pela primeira vez, ou na
               mesma tela.
             </li>
@@ -153,25 +153,24 @@ const Privacidade = () => (
             geladeira, verificador de mitos e estimativa e análise do diário) enviam <strong>só os dados
             necessários para cada pedido</strong>. <strong>Seu nome e seu e-mail não são enviados.</strong>
           </p>
-          <p>Os provedores envolvidos são:</p>
-          <ul className="list-disc pl-5 space-y-2">
-            <li><strong>Lovable AI Gateway</strong> (Lovable): recebe o pedido e o encaminha ao modelo;</li>
-            <li><strong>Google (Gemini)</strong>: plano, troca de refeição, scanners, mitos e diário;</li>
-            <li><strong>OpenAI</strong>: assistente de conversa.</li>
-          </ul>
+          <p>
+            O provedor de IA é o <strong>Google</strong>, com os modelos <strong>Gemini</strong> acessados
+            pela API Gemini. Ele é usado em todas essas funções. Os pedidos saem dos nossos servidores (as
+            funções do Supabase) direto para o Google, sem intermediários.
+          </p>
           <p>
             As respostas da IA são estimativas geradas automaticamente e podem conter erros. Elas não
             substituem um profissional de saúde (veja os{" "}
-            <Link to="/termos" className="text-primary hover:underline">Termos de Uso</Link>). O uso que esses
-            provedores fazem dos dados, incluindo retenção e treinamento de modelos, segue os contratos e
-            políticas deles: [CONFIRMAR_TERMOS_DOS_PROVEDORES_DE_IA].
+            <Link to="/termos" className="text-primary hover:underline">Termos de Uso</Link>). O uso que o Google
+            faz desses dados, incluindo retenção e treinamento de modelos, segue os termos da API Gemini
+            aplicáveis à nossa conta: [CONFIRMAR_TERMOS_DO_GOOGLE_GEMINI_API].
           </p>
         </Section>
 
         <Section title="5. Com quem compartilhamos">
           <ul className="list-disc pl-5 space-y-2">
             <li><strong>Supabase</strong>: banco de dados, autenticação, armazenamento das fotos e execução das funções do servidor;</li>
-            <li><strong>Lovable, Google e OpenAI</strong>: processamento de IA, conforme a seção 4;</li>
+            <li><strong>Google (API Gemini)</strong>: processamento de IA, conforme a seção 4;</li>
             <li><strong>Lovable</strong>: login com Google no site, quando você escolhe essa opção;</li>
             <li><strong>Vercel</strong>: hospedagem do site (registros técnicos de acesso);</li>
             <li><strong>Google Fonts</strong>: fontes do site (recebe endereço IP e navegador);</li>
@@ -186,7 +185,7 @@ const Privacidade = () => (
 
         <Section title="6. Transferência internacional">
           <p>
-            Os provedores de IA e de infraestrutura acima podem processar dados fora do Brasil
+            O provedor de IA (Google) e os de infraestrutura acima podem processar dados fora do Brasil
             ([PAISES_DE_PROCESSAMENTO]). Nossos servidores de banco de dados ficam em
             [REGIAO_DOS_SERVIDORES]. A transferência ocorre com base no seu consentimento específico
             (art. 33, VIII) e nas garantias contratuais dos provedores

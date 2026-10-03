@@ -19,7 +19,7 @@ describe("ConsentScreen", () => {
   it("nada vem marcado e Continuar só libera com a caixa de saúde", async () => {
     setup();
     const health = screen.getByRole("checkbox", { name: /dados de saúde \(peso/i });
-    const ai = screen.getByRole("checkbox", { name: /provedores de inteligência artificial/i });
+    const ai = screen.getByRole("checkbox", { name: /provedor de inteligência artificial google/i });
     const cont = screen.getByRole("button", { name: "Continuar" });
 
     expect(health).not.toBeChecked();
@@ -40,7 +40,7 @@ describe("ConsentScreen", () => {
     update.mockClear();
     setup();
     fireEvent.click(screen.getByRole("checkbox", { name: /dados de saúde \(peso/i }));
-    fireEvent.click(screen.getByRole("checkbox", { name: /provedores de inteligência artificial/i }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /provedor de inteligência artificial google/i }));
     fireEvent.click(screen.getByRole("button", { name: "Continuar" }));
     await waitFor(() => expect(update).toHaveBeenCalledWith({ health_data: true, ai_processing: true }, "app"));
   });
