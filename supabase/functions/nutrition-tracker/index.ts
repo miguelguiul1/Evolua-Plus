@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json, requireUser, requireAiConsent, rateLimit, readJson, isResponse, TEXT_BODY_MAX, clampNumber, clampText } from "../_shared/guard.ts";
+import { chatCompletion, requireAiConfig } from "../_shared/aiClient.ts";
 import { loadUserContext } from "../_shared/userContext.ts";
 
 /** Um dia de diário raramente passa de algumas dezenas de itens. */
@@ -44,8 +45,7 @@ serve(async (req) => {
           };
         })
       : [];
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const aiConfig = requireAiConfig();
 
     // Contexto do usuário vem do banco para ações que precisam de preferências.
     let prefContext = "";
@@ -84,19 +84,11 @@ Valores devem ser para a quantidade especificada. Seja preciso baseando-se em ta
       userPrompt = `Registro alimentar do dia:\n${JSON.stringify(safeLog)}`;
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-      }),
+    const response = await chatCompletion(aiConfig, {
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
     });
 
     if (!response.ok) {

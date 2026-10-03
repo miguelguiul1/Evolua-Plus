@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json, requireUser, requireAiConsent, rateLimit, readJson, isResponse, TEXT_BODY_MAX, clampNumber, clampStringList, clampText } from "../_shared/guard.ts";
+import { chatCompletion, requireAiConfig } from "../_shared/aiClient.ts";
 import { loadUserContext } from "../_shared/userContext.ts";
 import { buildForbiddenPromptLine, buildForbiddenTerms } from "../_shared/foodPreferences.ts";
 import { AIHttpError, guardHeader } from "../_shared/aiGuard.ts";
@@ -33,8 +34,7 @@ serve(async (req) => {
       .slice(-10)
       .map((m) => ({ role: m.role, content: m.content.slice(0, 4000) }));
     if (!safeMessages.length) return json({ error: "Conversa inválida." }, 400);
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurado");
+    const aiConfig = requireAiConfig();
 
     let ctx = "";
 
@@ -131,18 +131,13 @@ FORMATO: use markdown simples (negrito, listas curtas). Nada de textos longos.${
 
     /** Uma chamada à IA. `feedback` (regeneração) vai como instrução de sistema no fim. */
     const callAI = async (feedback: string | null): Promise<string> => {
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "openai/gpt-5.6-sol",
-          reasoning_effort: "none",
-          messages: [
-            { role: "system", content: systemPrompt },
-            ...safeMessages,
-            ...(feedback ? [{ role: "system", content: feedback }] : []),
-          ],
-        }),
+      const response = await chatCompletion(aiConfig, {
+        reasoning_effort: "none",
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...safeMessages,
+          ...(feedback ? [{ role: "system", content: feedback }] : []),
+        ],
       });
       if (!response.ok) throw new AIHttpError(response.status, await response.text());
       const data = await response.json();

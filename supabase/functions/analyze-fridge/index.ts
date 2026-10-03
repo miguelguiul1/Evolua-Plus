@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json, requireUser, requireAiConsent, rateLimit, readJson, isResponse, validateImage } from "../_shared/guard.ts";
+import { chatCompletion, requireAiConfig } from "../_shared/aiClient.ts";
 import { loadUserContext } from "../_shared/userContext.ts";
 import { buildForbiddenPromptLine, buildForbiddenTerms } from "../_shared/foodPreferences.ts";
 import { AIHttpError, guardHeader } from "../_shared/aiGuard.ts";
@@ -22,8 +23,7 @@ serve(async (req) => {
     const { imageBase64 } = body as Record<string, unknown>;
     const badImage = validateImage(imageBase64);
     if (badImage) return badImage;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const aiConfig = requireAiConfig();
 
     // Contexto do usuário vem SEMPRE do banco (RLS ativa via JWT).
     const ctx = await loadUserContext(req, auth.userId);
@@ -63,25 +63,17 @@ Regras:
 
     /** Uma chamada à IA (a foto vai de novo na regeneração). */
     const callAI = async (feedback: string | null): Promise<string> => {
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            { role: "system", content: systemPrompt },
-            {
-              role: "user",
-              content: [
-                { type: "text", text: feedback ? `${userText}\n\n${feedback}` : userText },
-                { type: "image_url", image_url: { url: imageBase64 } },
-              ],
-            },
-          ],
-        }),
+      const response = await chatCompletion(aiConfig, {
+        messages: [
+          { role: "system", content: systemPrompt },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: feedback ? `${userText}\n\n${feedback}` : userText },
+              { type: "image_url", image_url: { url: imageBase64 } },
+            ],
+          },
+        ],
       });
       if (!response.ok) throw new AIHttpError(response.status, await response.text());
       const data = await response.json();

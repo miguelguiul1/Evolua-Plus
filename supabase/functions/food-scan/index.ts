@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json, requireUser, requireAiConsent, rateLimit, readJson, isResponse, validateImage } from "../_shared/guard.ts";
+import { chatCompletion, requireAiConfig } from "../_shared/aiClient.ts";
 import { loadUserContext } from "../_shared/userContext.ts";
 
 serve(async (req) => {
@@ -30,8 +31,7 @@ serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurado");
+    const aiConfig = requireAiConfig();
 
     const objetivoCtx = objetivo ? `\nObjetivo do usuário: ${objetivo}. Adapte o campo "analise_objetivo" a esse objetivo.` : "";
 
@@ -71,23 +71,18 @@ Regras:
 - Nunca invente marcas: use null se não estiver visível.
 - Responda SOMENTE o JSON.${objetivoCtx}`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Analise esta imagem e retorne o JSON nutricional." },
-              { type: "image_url", image_url: { url: imageBase64 } },
-            ],
-          },
-        ],
-        max_tokens: 8000,
-      }),
+    const response = await chatCompletion(aiConfig, {
+      messages: [
+        { role: "system", content: systemPrompt },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Analise esta imagem e retorne o JSON nutricional." },
+            { type: "image_url", image_url: { url: imageBase64 } },
+          ],
+        },
+      ],
+      max_tokens: 8000,
     });
 
     if (!response.ok) {

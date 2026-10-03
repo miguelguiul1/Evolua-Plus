@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json, requireUser, requireAiConsent, rateLimit, readJson, isResponse, TEXT_BODY_MAX } from "../_shared/guard.ts";
+import { chatCompletion, requireAiConfig } from "../_shared/aiClient.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -24,34 +25,25 @@ serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    const aiConfig = requireAiConfig();
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content: `Você é o Evolua Plus AI, assistente baseado em IA especializado em desmistificar mitos alimentares (NÃO é nutricionista nem médico; nunca diagnostique nem prescreva). Se a afirmação envolver doença, medicamento, gravidez ou transtorno alimentar, explique de forma educativa e oriente avaliação com profissional de saúde. 
+    const response = await chatCompletion(aiConfig, {
+      messages: [
+        {
+          role: "system",
+          content: `Você é o Evolua Plus AI, assistente baseado em IA especializado em desmistificar mitos alimentares (NÃO é nutricionista nem médico; nunca diagnostique nem prescreva). Se a afirmação envolver doença, medicamento, gravidez ou transtorno alimentar, explique de forma educativa e oriente avaliação com profissional de saúde. 
 Responda APENAS com JSON válido, sem markdown. Use este formato:
 {"veredicto":"MITO" ou "VERDADE" ou "PARCIALMENTE VERDADE","explicacao":"explicação clara em 2-3 frases","fonte":"nome da instituição científica que embasa a resposta"}
 
 Base suas respostas em evidências de: OMS, Harvard T.H. Chan, Ministério da Saúde, estudos publicados em journals revisados por pares. Seja direto e acessível.`,
-          },
-          {
-            role: "user",
-            content: `A seguinte afirmação é mito ou verdade? "${question.trim()}"`,
-          },
-        ],
-        max_tokens: 500,
-        temperature: 0.3,
-      }),
+        },
+        {
+          role: "user",
+          content: `A seguinte afirmação é mito ou verdade? "${question.trim()}"`,
+        },
+      ],
+      max_tokens: 500,
+      temperature: 0.3,
     });
 
     if (response.status === 429) {

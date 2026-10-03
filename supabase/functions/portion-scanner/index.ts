@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json, requireUser, requireAiConsent, rateLimit, readJson, isResponse, validateImage } from "../_shared/guard.ts";
+import { chatCompletion, requireAiConfig } from "../_shared/aiClient.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -18,8 +19,7 @@ serve(async (req) => {
     const { imageBase64 } = body as Record<string, unknown>;
     const badImage = validateImage(imageBase64);
     if (badImage) return badImage;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurado");
+    const aiConfig = requireAiConfig();
 
     const systemPrompt = `Você é o Evolua Plus AI, assistente de nutrição baseado em IA (NÃO é nutricionista nem profissional de saúde). Todos os números são ESTIMATIVAS visuais, nunca valores exatos. Analise a foto de um prato/porção. Retorne APENAS JSON válido (sem markdown):
 {
@@ -32,23 +32,18 @@ serve(async (req) => {
 }
 Seja realista nas quantidades. Sem texto extra fora do JSON.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Analise esta porção e retorne o JSON." },
-              { type: "image_url", image_url: { url: imageBase64 } },
-            ],
-          },
-        ],
-        max_tokens: 2000,
-      }),
+    const response = await chatCompletion(aiConfig, {
+      messages: [
+        { role: "system", content: systemPrompt },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Analise esta porção e retorne o JSON." },
+            { type: "image_url", image_url: { url: imageBase64 } },
+          ],
+        },
+      ],
+      max_tokens: 2000,
     });
 
     if (!response.ok) {
