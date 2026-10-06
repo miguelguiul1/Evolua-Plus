@@ -115,7 +115,8 @@ Regras:
       const end = clean.lastIndexOf("}");
       parsed = JSON.parse(start >= 0 ? clean.slice(start, end + 1) : clean);
     } catch {
-      console.error("Failed to parse AI response:", content);
+      // Não loga o conteúdo: a resposta da IA descreve o que a pessoa come.
+      console.error("Failed to parse AI response", { length: content.length });
       return new Response(JSON.stringify({ error: "Não consegui interpretar a análise. Tente novamente." }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

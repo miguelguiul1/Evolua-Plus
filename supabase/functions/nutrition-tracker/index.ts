@@ -1,6 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse } from "../_shared/guard.ts";
+import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, TEXT_BODY_MAX, clampNumber, clampText } from "../_shared/guard.ts";
 import { loadUserContext } from "../_shared/userContext.ts";
+
+/** Um dia de diário raramente passa de algumas dezenas de itens. */
+const MAX_LOG_ITEMS = 100;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -12,7 +15,7 @@ serve(async (req) => {
 
 
   try {
-    const body = await readJson(req);
+    const body = await readJson(req, TEXT_BODY_MAX);
     if (isResponse(body)) return body;
     const { action, foodName: rawFood, quantity: rawQty, dailyLog } = body as Record<string, unknown>;
     if (action !== "estimate" && action !== "analyze") return json({ error: "Ação inválida." }, 400);
@@ -20,6 +23,25 @@ serve(async (req) => {
     const quantity = typeof rawQty === "string" ? rawQty.slice(0, 100) : "";
     if (action === "estimate" && !foodName.trim()) return json({ error: "Informe o alimento." }, 400);
     if (action === "analyze" && !Array.isArray(dailyLog)) return json({ error: "Registro inválido." }, 400);
+    if (action === "analyze" && (dailyLog as unknown[]).length > MAX_LOG_ITEMS) {
+      return json({ error: "Registro muito grande para analisar." }, 400);
+    }
+    // Só os campos esperados, com texto limitado e números validados, entram no prompt.
+    const safeLog = action === "analyze"
+      ? (dailyLog as unknown[]).map((raw) => {
+          const e = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>;
+          return {
+            alimento: clampText(e.alimento, 200),
+            quantidade: clampText(e.quantidade, 60),
+            refeicao: clampText(e.refeicao, 30),
+            calorias: clampNumber(e.calorias),
+            proteina: clampNumber(e.proteina),
+            carbs: clampNumber(e.carbs),
+            gordura: clampNumber(e.gordura),
+            fibra: clampNumber(e.fibra),
+          };
+        })
+      : [];
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -57,7 +79,7 @@ Valores devem ser para a quantidade especificada. Seja preciso baseando-se em ta
 - Compare com metas baseadas no objetivo do usuário
 - Sugira ajustes práticos e específicos
 - Identifique excessos e deficiências de macro/micronutrientes${prefContext}`;
-      userPrompt = `Registro alimentar do dia:\n${JSON.stringify(dailyLog)}`;
+      userPrompt = `Registro alimentar do dia:\n${JSON.stringify(safeLog)}`;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -101,7 +123,8 @@ Valores devem ser para a quantidade especificada. Seja preciso baseando-se em ta
       const clean = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
       parsed = JSON.parse(clean);
     } catch {
-      console.error("Parse error:", content);
+      // Não loga o conteúdo: a resposta da IA descreve a alimentação da pessoa.
+      console.error("Parse error: resposta da IA não é JSON válido", { length: content.length });
       return new Response(JSON.stringify({ error: "Erro ao interpretar resposta" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

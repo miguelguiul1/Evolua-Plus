@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse } from "../_shared/guard.ts";
+import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, TEXT_BODY_MAX, clampNumber, clampStringList, clampText } from "../_shared/guard.ts";
 import { loadUserContext } from "../_shared/userContext.ts";
 import { buildForbiddenPromptLine, buildForbiddenTerms } from "../_shared/foodPreferences.ts";
 import { AIHttpError, guardHeader } from "../_shared/aiGuard.ts";
@@ -15,7 +15,7 @@ serve(async (req) => {
 
 
   try {
-    const body = await readJson(req);
+    const body = await readJson(req, TEXT_BODY_MAX);
     if (isResponse(body)) return body;
     const { messages } = body as Record<string, unknown>;
     if (!Array.isArray(messages) || messages.length === 0 || messages.length > 20) {
@@ -49,15 +49,23 @@ serve(async (req) => {
     if (userCtx.preferences?.liked_foods?.length) p.push(`Gosta de: ${userCtx.preferences.liked_foods.join(", ")}`);
 
     // Dados analíticos continuam vindo do frontend (computados a partir de food_log/weight_log).
-    const profile = (body as Record<string, unknown>).profile as Record<string, unknown> | undefined;
+    // Vêm do cliente: números passam por clampNumber e textos têm limite de itens e tamanho.
+    const asObject = (v: unknown) =>
+      typeof v === "object" && v !== null && !Array.isArray(v) ? v as Record<string, unknown> : undefined;
+    const n = (v: unknown) => clampNumber(v) ?? "?";
+    const profile = asObject((body as Record<string, unknown>).profile);
     if (profile) {
-      if (profile.memoria && Array.isArray(profile.memoria)) p.push(`Memória da IA (informações que a pessoa pediu para lembrar): ${(profile.memoria as string[]).join(" | ")}`);
-      const h = profile.hoje as Record<string, unknown> | undefined;
-      if (h) p.push(`Hoje: ${h.refeicoes} registro(s), ${h.calorias} kcal, ${h.proteina}g proteína, ${h.carboidratos}g carbo, ${h.gorduras}g gordura, ${h.fibras}g fibra`);
-      const s = profile.semana as Record<string, unknown> | undefined;
-      if (s) p.push(`Últimos 7 dias: ${s.dias_registrados} dias registrados, média ${s.media_calorias} kcal / ${s.media_proteina}g proteína / ${s.media_fibras}g fibra${Array.isArray(s.alimentos_frequentes) && s.alimentos_frequentes.length ? `; alimentos frequentes: ${(s.alimentos_frequentes as string[]).join(", ")}` : ""}`);
-      const e = profile.evolucao as Record<string, unknown> | undefined;
-      if (e) p.push(`Evolução corporal: peso atual ${e.peso_atual}kg, variação ${e.variacao_kg}kg em ${e.registros} registros (último em ${e.ultimo_registro})`);
+      const memoria = clampStringList(profile.memoria, 40, 300);
+      if (memoria.length) p.push(`Memória da IA (informações que a pessoa pediu para lembrar): ${memoria.join(" | ")}`);
+      const h = asObject(profile.hoje);
+      if (h) p.push(`Hoje: ${n(h.refeicoes)} registro(s), ${n(h.calorias)} kcal, ${n(h.proteina)}g proteína, ${n(h.carboidratos)}g carbo, ${n(h.gorduras)}g gordura, ${n(h.fibras)}g fibra`);
+      const s = asObject(profile.semana);
+      if (s) {
+        const frequentes = clampStringList(s.alimentos_frequentes, 10, 60);
+        p.push(`Últimos 7 dias: ${n(s.dias_registrados)} dias registrados, média ${n(s.media_calorias)} kcal / ${n(s.media_proteina)}g proteína / ${n(s.media_fibras)}g fibra${frequentes.length ? `; alimentos frequentes: ${frequentes.join(", ")}` : ""}`);
+      }
+      const e = asObject(profile.evolucao);
+      if (e) p.push(`Evolução corporal: peso atual ${n(e.peso_atual)}kg, variação ${n(e.variacao_kg)}kg em ${n(e.registros)} registros (último em ${clampText(e.ultimo_registro, 10)})`);
     }
 
     if (p.length) ctx = `\n\nCONTEXTO REAL DO USUÁRIO (use ativamente, sem repetir tudo):\n- ${p.join("\n- ")}`;

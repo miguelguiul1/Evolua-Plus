@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, clampText } from "../_shared/guard.ts";
+import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, TEXT_BODY_MAX, clampText } from "../_shared/guard.ts";
 import { loadUserContext } from "../_shared/userContext.ts";
 import { buildForbiddenPromptLine, buildForbiddenTerms } from "../_shared/foodPreferences.ts";
 import { AIHttpError, guardHeader } from "../_shared/aiGuard.ts";
@@ -57,7 +57,7 @@ serve(async (req) => {
   if (limited) return limited;
 
   try {
-    const body = await readJson(req);
+    const body = await readJson(req, TEXT_BODY_MAX);
     if (isResponse(body)) return body;
     const { refeicao: rawRefeicao, motivo: rawMotivo } = body as Record<string, unknown>;
     const motivo = typeof rawMotivo === "string" ? rawMotivo.slice(0, 400) : "";

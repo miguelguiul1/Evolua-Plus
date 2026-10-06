@@ -3,6 +3,7 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthContext } from "@/contexts/useAuth";
 import { isNativeGoogleAvailable, registerNativeGoogleDeepLink } from "@/lib/nativeGoogleAuth";
+import { clearLocalUserData } from "@/lib/localUserData";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -15,7 +16,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (isNativeGoogleAvailable()) registerNativeGoogleDeepLink();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        // Qualquer saída (logout, sessão expirada, conta excluída) limpa os dados locais.
+        if (event === "SIGNED_OUT") clearLocalUserData();
         setSession(session);
         setLoading(false);
       }

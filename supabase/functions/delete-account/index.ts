@@ -30,17 +30,22 @@ Deno.serve(async (req) => {
   })
 
   try {
-    // 1. Arquivos privados no Storage (pasta do próprio usuário)
-    const { data: files } = await admin.storage.from('progress').list(userId, { limit: 1000 })
-    if (files?.length) {
-      await admin.storage.from('progress').remove(files.map((f) => `${userId}/${f.name}`))
+    // 1. Arquivos privados no Storage (pasta do próprio usuário).
+    // Remove em lotes até esvaziar a pasta; qualquer erro aborta antes de apagar o banco,
+    // para não sobrar foto no bucket sem conta dona.
+    for (let batch = 0; batch < 100; batch++) {
+      const { data: files, error: listError } = await admin.storage.from('progress').list(userId, { limit: 1000 })
+      if (listError) throw new Error(`storage list: ${listError.message}`)
+      if (!files?.length) break
+      const { error: removeError } = await admin.storage.from('progress').remove(files.map((f) => `${userId}/${f.name}`))
+      if (removeError) throw new Error(`storage remove: ${removeError.message}`)
     }
 
     // 2. Registros relacionados
     const tables = [
       'progress_photos', 'food_log', 'water_log', 'weight_log', 'scan_history',
       'chat_messages', 'ai_insights', 'ai_memory', 'food_favorites',
-      'user_preferences', 'user_goals', 'meal_plans', 'global_favorites',
+      'user_preferences', 'user_goals', 'meal_plans', 'global_favorites', 'user_routine_profile',
     ]
     for (const t of tables) {
       const { error } = await admin.from(t).delete().eq('user_id', userId)
