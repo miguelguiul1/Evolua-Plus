@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, json, requireUser, rateLimit, readJson, isResponse, TEXT_BODY_MAX, clampNumber, clampText } from "../_shared/guard.ts";
+import { corsHeaders, json, requireUser, requireAiConsent, rateLimit, readJson, isResponse, TEXT_BODY_MAX, clampNumber, clampText } from "../_shared/guard.ts";
 import { loadUserContext } from "../_shared/userContext.ts";
 
 /** Um dia de diário raramente passa de algumas dezenas de itens. */
@@ -10,6 +10,8 @@ serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Método não permitido" }, 405);
   const auth = await requireUser(req);
   if (isResponse(auth)) return auth;
+  const noConsent = requireAiConsent(auth);
+  if (noConsent) return noConsent;
   const limited = rateLimit("nutrition-tracker:" + auth.userId, 30);
   if (limited) return limited;
 

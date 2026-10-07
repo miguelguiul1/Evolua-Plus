@@ -20,3 +20,16 @@ Deno.test("readJson rejeita corpo de texto acima do limite", async () => {
   const res = await readJson(new Request("http://x", { method: "POST", body: big }), TEXT_BODY_MAX);
   assertEquals(res instanceof Response && res.status, 413);
 });
+
+Deno.test("hasAiConsent exige saúde E IA concedidos", async () => {
+  const { hasAiConsent, requireAiConsent } = await import("./guard.ts");
+  const g = (granted: unknown) => ({ granted, version: "v", at: "2026-09-30T00:00:00Z" });
+  assertEquals(hasAiConsent({}), false);
+  assertEquals(hasAiConsent({ consents: { health_data: g(true) } }), false);
+  assertEquals(hasAiConsent({ consents: { health_data: g(false), ai_processing: g(true) } }), false);
+  assertEquals(hasAiConsent({ consents: { health_data: g(true), ai_processing: g("true") } }), false);
+  assertEquals(hasAiConsent({ consents: { health_data: g(true), ai_processing: g(true) } }), true);
+  const res = requireAiConsent({ userId: "u", userMetadata: {} });
+  assertEquals(res?.status, 403);
+  assertEquals((await res!.json()).code, "ai_consent_required");
+});

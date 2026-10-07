@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Sun, Moon, Monitor, User, Bell, Ruler, Download, Trash2, KeyRound, LogOut } from "lucide-react";
+import { Sun, Moon, Monitor, User, Bell, Ruler, Download, Trash2, KeyRound, LogOut, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,8 @@ import { useAuth } from "@/contexts/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { clearStoredPlano } from "@/lib/planoStorage";
 import { resolveAppUrl } from "@/lib/appUrl";
+import ConsentSettings from "@/components/consent/ConsentSettings";
+import { buildUserExport } from "@/lib/exportUserData";
 
 type Prefs = {
   peso: "kg" | "lb";
@@ -107,60 +109,33 @@ const Configuracoes = () => {
     }
   };
 
+  const [exporting, setExporting] = useState(false);
   const exportData = async () => {
-    if (!user) return;
-    // Portabilidade (LGPD art. 18, V): todas as tabelas com dados da pessoa.
-    const [
-      profile, prefs, routine, food, water, weight, photos, goals, scans,
-      chat, memory, insights, plan, foodFavs, globalFavs,
-    ] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", user.id),
-      supabase.from("user_preferences").select("*").eq("user_id", user.id),
-      // Tabela ainda fora dos tipos gerados (mesmo cast de useRoutineProfile).
-      (supabase as unknown as {
-        from: (t: "user_routine_profile") => {
-          select: (c: string) => { eq: (col: "user_id", v: string) => Promise<{ data: unknown[] | null }> };
-        };
-      }).from("user_routine_profile").select("*").eq("user_id", user.id),
-      supabase.from("food_log").select("*").eq("user_id", user.id),
-      supabase.from("water_log").select("*").eq("user_id", user.id),
-      supabase.from("weight_log").select("*").eq("user_id", user.id),
-      supabase.from("progress_photos").select("*").eq("user_id", user.id),
-      supabase.from("user_goals").select("*").eq("user_id", user.id),
-      supabase.from("scan_history").select("*").eq("user_id", user.id),
-      supabase.from("chat_messages").select("*").eq("user_id", user.id),
-      supabase.from("ai_memory").select("*").eq("user_id", user.id),
-      supabase.from("ai_insights").select("*").eq("user_id", user.id),
-      supabase.from("meal_plans").select("*").eq("user_id", user.id),
-      supabase.from("food_favorites").select("*").eq("user_id", user.id),
-      supabase.from("global_favorites").select("*").eq("user_id", user.id),
-    ]);
-    const payload = {
-      exportado_em: new Date().toISOString(),
-      conta: { email: user.email, criada_em: user.created_at },
-      perfil: profile.data ?? [],
-      preferencias: prefs.data ?? [],
-      rotina: routine.data ?? [],
-      diario_alimentar: food.data ?? [],
-      hidratacao: water.data ?? [],
-      evolucao: weight.data ?? [],
-      fotos_de_evolucao: photos.data ?? [],
-      metas: goals.data ?? [],
-      historico_scanner: scans.data ?? [],
-      conversas_ia: chat.data ?? [],
-      memoria_ia: memory.data ?? [],
-      insights_ia: insights.data ?? [],
-      plano_alimentar: plan.data ?? [],
-      alimentos_favoritos: foodFavs.data ?? [],
-      favoritos: globalFavs.data ?? [],
-    };
+    if (!user || exporting) return;
+    // Portabilidade (LGPD art. 18, V): todas as tabelas do mapa de dados + arquivos das fotos.
+    setExporting(true);
+    const loading = toast.loading("Preparando seus dados (inclui as fotos, pode levar alguns segundos)…");
+    let payload: Awaited<ReturnType<typeof buildUserExport>>;
+    try {
+      payload = await buildUserExport(user);
+    } catch (e) {
+      toast.dismiss(loading);
+      setExporting(false);
+      return toast.error("Não foi possível exportar agora", { description: (e as Error).message });
+    }
+    toast.dismiss(loading);
+    setExporting(false);
     const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
     const a = document.createElement("a");
     a.href = url;
     a.download = `evolua-plus-meus-dados-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Seus dados foram exportados");
+    if (payload.avisos.length) {
+      toast.warning("Exportação concluída com avisos", { description: "Alguns itens não puderam ser incluídos; veja “avisos” no arquivo." });
+    } else {
+      toast.success("Seus dados foram exportados");
+    }
   };
 
   const deleteAccount = async () => {
@@ -233,8 +208,8 @@ const Configuracoes = () => {
                 <Button variant="outline" onClick={changePassword} className="gap-2">
                   <KeyRound className="w-4 h-4" /> Alterar senha
                 </Button>
-                <Button variant="outline" onClick={exportData} className="gap-2">
-                  <Download className="w-4 h-4" /> Exportar meus dados
+                <Button variant="outline" onClick={exportData} disabled={exporting} className="gap-2">
+                  <Download className="w-4 h-4" /> {exporting ? "Exportando…" : "Exportar meus dados"}
                 </Button>
                 <ConfirmDialog
                   title="Excluir sua conta?"
@@ -255,6 +230,10 @@ const Configuracoes = () => {
               </div>
             </div>
 
+          </Section>
+
+          <Section icon={ShieldCheck} title="Privacidade e consentimentos">
+            <ConsentSettings />
           </Section>
 
           <Section icon={Ruler} title="Preferências">

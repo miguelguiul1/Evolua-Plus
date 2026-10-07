@@ -12,3 +12,4 @@ Para aplicar: teste antes no projeto de TESTE, depois mova o arquivo para `supab
 | `20260930120000_lock_profiles_premium.sql` | M2 | impede que o usuário mude `profiles.is_premium` |
 | `20260930120100_harden_progress_bucket.sql` | M3 | bucket `progress` privado, até 15 MB, só imagens |
 | `20260930120200_progress_photos_same_owner.sql` | B10 | foto só pode apontar para um `weight_log` do mesmo dono |
+| `20260930130000_create_user_consents.sql` | LGPD | histórico de consentimento (saúde e IA), RLS por dono, só inserção, com backfill do `user_metadata` |

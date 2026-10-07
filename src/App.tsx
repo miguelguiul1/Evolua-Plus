@@ -9,6 +9,7 @@ import Navbar from "./components/Navbar";
 import MobileTabBar from "./components/MobileTabBar";
 import Index from "./pages/Index";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { AiConsentProvider } from "./components/consent/AiConsentProvider";
 import { RouteErrorBoundary } from "./components/RouteErrorBoundary";
 import { PageSkeleton } from "./components/ds/Skeletons";
 import OfflineScreen from "./components/OfflineScreen";
@@ -104,6 +105,7 @@ const App = () => {
         <Sonner />
         {!isOnline && <OfflineScreen />}
         <BrowserRouter>
+          <AiConsentProvider>
           <ScrollToTop />
           <PageTitle />
           <a
@@ -151,6 +153,7 @@ const App = () => {
             </Suspense>
             <MobileTabBar />
           </RouteErrorBoundary>
+          </AiConsentProvider>
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>

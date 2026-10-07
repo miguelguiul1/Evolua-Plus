@@ -10,6 +10,7 @@ import FoodScanner from "@/components/FoodScanner";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import PortionScanner from "@/components/PortionScanner";
 import { compressImage } from "@/lib/compressImage";
+import { useRequireAiConsent } from "@/components/consent/aiConsentContext";
 
 interface Alimento {
   nome: string;
@@ -35,6 +36,7 @@ interface AnalysisResult {
 }
 
 const Scanner = () => {
+  const requireAiConsent = useRequireAiConsent();
   const [image, setImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -64,6 +66,7 @@ const Scanner = () => {
 
   const analyze = async () => {
     if (!image) return;
+    if (!(await requireAiConsent())) return;
     setAnalyzing(true);
     try {
       const { data, error } = await supabase.functions.invoke("analyze-fridge", {

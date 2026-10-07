@@ -20,7 +20,9 @@ export const json = (body: unknown, status = 200) =>
  * NÃO apenas decodifica claims como getClaims(). Isso garante que um JWT forjado
  * ou expirado seja rejeitado mesmo se o gateway não tiver verificado (ex.: dev local).
  */
-export async function requireUser(req: Request): Promise<{ userId: string } | Response> {
+export type AuthedUser = { userId: string; userMetadata: Record<string, unknown> };
+
+export async function requireUser(req: Request): Promise<AuthedUser | Response> {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) return json({ error: "Não autenticado" }, 401);
   const token = authHeader.slice(7);
@@ -32,10 +34,31 @@ export async function requireUser(req: Request): Promise<{ userId: string } | Re
     );
     const { data, error } = await anon.auth.getUser(token);
     if (error || !data?.user?.id) return json({ error: "Sessão inválida ou expirada" }, 401);
-    return { userId: data.user.id };
+    return { userId: data.user.id, userMetadata: (data.user.user_metadata ?? {}) as Record<string, unknown> };
   } catch {
     return json({ error: "Sessão inválida ou expirada" }, 401);
   }
+}
+
+/**
+ * LGPD: a IA só recebe dados de quem autorizou o tratamento de dados de saúde E o envio aos
+ * provedores de IA. O estado vem de user_metadata.consents, lido no servidor por getUser()
+ * (ver src/lib/consent.ts). Sem autorização → 403 com code "ai_consent_required".
+ */
+export function hasAiConsent(userMetadata: Record<string, unknown>): boolean {
+  const consents = userMetadata?.consents as Record<string, { granted?: unknown } | undefined> | undefined;
+  return consents?.health_data?.granted === true && consents?.ai_processing?.granted === true;
+}
+
+export function requireAiConsent(auth: AuthedUser): Response | null {
+  if (hasAiConsent(auth.userMetadata)) return null;
+  return json(
+    {
+      error: "Para usar a IA, autorize o envio dos seus dados em Configurações → Privacidade e consentimentos.",
+      code: "ai_consent_required",
+    },
+    403,
+  );
 }
 
 /** Rate limit simples em memória (por instância). Evita abuso das rotas de IA. */

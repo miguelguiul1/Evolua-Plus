@@ -20,6 +20,7 @@ import {
   FoodEntry, MEAL_TYPES, sumTotals, todayISO, toISODate,
   useFavorites, useFoodLog, useFoodLogRange, useGoals, useSyncModules,
 } from "@/hooks/useNutrition";
+import { useRequireAiConsent } from "@/components/consent/aiConsentContext";
 
 interface DailyAnalysis {
   resumo: { calorias_total: number; proteina_total: number; carb_total: number; gordura_total: number; fibra_total: number };
@@ -51,6 +52,7 @@ const validateQuantity = (raw: string): string | null => {
 };
 
 const DiarioAlimentar = () => {
+  const requireAiConsent = useRequireAiConsent();
   const { user } = useAuth();
   const navigate = useNavigate();
   const sync = useSyncModules();
@@ -145,6 +147,8 @@ const DiarioAlimentar = () => {
       validateQuantity(quantity),
     ]);
     if (invalid) return toast.error("Verifique os dados", { description: invalid });
+    // A estimativa de calorias usa a IA.
+    if (!(await requireAiConsent())) return;
     setAdding(true);
     try {
       const { data: estimate, error: estError } = await supabase.functions.invoke("nutrition-tracker", {
@@ -216,6 +220,7 @@ const DiarioAlimentar = () => {
 
   const analyzeDay = async () => {
     if (entries.length === 0) return toast("Adicione alimentos primeiro");
+    if (!(await requireAiConsent())) return;
     setAnalyzing(true);
     try {
       const { data, error } = await supabase.functions.invoke("nutrition-tracker", {
