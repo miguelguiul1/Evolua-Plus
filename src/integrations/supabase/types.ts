@@ -370,6 +370,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_consents: {
+        Row: {
+          created_at: string
+          granted: boolean
+          id: string
+          purpose: string
+          source: string
+          text_version: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted: boolean
+          id?: string
+          purpose: string
+          source?: string
+          text_version: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted?: boolean
+          id?: string
+          purpose?: string
+          source?: string
+          text_version?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_goals: {
         Row: {
           bmr: number | null
