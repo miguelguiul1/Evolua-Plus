@@ -220,7 +220,7 @@ const Calculator = () => {
   const nextStep = () => (step === 4 ? calculate() : setStep((s) => s + 1));
 
   return (
-    <section id="calculator" className="py-24 px-4 sm:px-6">
+    <section id="calculator" className="py-24">
       <div className="container mx-auto max-w-2xl">
         {step < TOTAL_STEPS && (
           <div className="text-center mb-12">
@@ -264,7 +264,7 @@ const Calculator = () => {
           {step === 1 && (
             <div className="space-y-6 animate-fade-in">
               <h3 className="font-display text-xl font-semibold text-foreground mb-6">Seus dados corporais</h3>
-              <div className="grid sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   { key: "peso", label: "Peso (kg)", placeholder: "72" },
                   { key: "altura", label: "Altura (cm)", placeholder: "175" },
@@ -489,7 +489,7 @@ const Calculator = () => {
                 <p className="text-muted-foreground mt-1">Objetivo: {results.objetivo}</p>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <ResultCard label="Taxa Metabólica Basal (TMB)" value={`${results.bmr}`} unit="kcal" hint={GLOSSARY.tmb} />
                 <ResultCard label="Gasto Diário Total (TDEE)" value={`${results.tdee}`} unit="kcal" hint={GLOSSARY.tdee} />
               </div>

@@ -15,7 +15,7 @@ export class RouteErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-background flex items-center justify-center px-6">
+        <div className="min-h-dvh bg-background flex items-center justify-center px-6">
           <div className="text-center max-w-sm">
             <AlertTriangle className="w-10 h-10 text-destructive mx-auto mb-4" />
             <p className="font-display font-semibold text-foreground mb-2">

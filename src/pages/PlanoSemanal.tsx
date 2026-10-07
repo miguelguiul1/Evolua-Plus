@@ -390,8 +390,8 @@ const PlanoSemanal = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
-      <div className="container mx-auto px-6 max-w-3xl">
+    <div className="min-h-dvh bg-background pt-20 pb-10 md:pb-16">
+      <div className="container mx-auto max-w-3xl">
         <div className="text-center mb-10">
           <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium">
             📅 Planejamento inteligente
@@ -424,7 +424,7 @@ const PlanoSemanal = () => {
                 <span>
                   Objetivo: <strong className="text-foreground">{objectiveInfo.emoji} {objectiveInfo.label}</strong>
                 </span>
-                <Link to="/preferencias" className="text-primary font-medium underline">
+                <Link to="/preferencias" className="tap-link min-w-11 justify-center text-primary font-medium underline">
                   alterar
                 </Link>
               </div>
@@ -465,7 +465,7 @@ const PlanoSemanal = () => {
 
             {/* Onboarding avançado opcional — nunca obrigatório para gerar o plano padrão */}
             <div className="pt-1">
-              <Button asChild variant="outline" className="gap-2">
+              <Button asChild variant="outline" className="gap-2 h-auto min-h-11 py-2 whitespace-normal text-left">
                 <Link to="/plano-personalizado">
                   <Sparkles className="w-4 h-4" />
                   {hasRoutineProfile ? "Editar rotina personalizada" : "Criar um plano feito sob medida pra minha rotina"}

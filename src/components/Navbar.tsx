@@ -73,13 +73,13 @@ const Navbar = () => {
   if (isLanding) {
     return (
       <nav
-        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+        className={`fixed inset-x-0 top-0 z-50 safe-top-bar transition-all duration-300 ${
           scrolled
             ? "bg-background/80 backdrop-blur-xl border-b border-border/60 shadow-soft"
             : "bg-transparent border-b border-transparent"
         }`}
       >
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="container mx-auto h-16 flex items-center justify-between">
           <Logo />
 
           <div className="hidden md:flex items-center gap-1">
@@ -125,7 +125,7 @@ const Navbar = () => {
 
         {open && (
           <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-xl animate-fade-in">
-            <div className="container mx-auto px-6 py-4 flex flex-col gap-1">
+            <div className="container mx-auto py-4 flex flex-col gap-1">
               {landingLinks.map((l) => (
                 <a
                   key={l.href}
@@ -162,8 +162,8 @@ const Navbar = () => {
   // Auth/Redefinir senha — cabeçalho mínimo, sem navegação do app (funil público)
   if (isPublicAuth) {
     return (
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+      <nav className="fixed top-0 left-0 right-0 z-50 safe-top-bar bg-background/80 backdrop-blur-md border-b border-border/50">
+        <div className="container mx-auto h-16 flex items-center justify-between">
           <Logo />
           <Link
             to="/"
@@ -178,8 +178,8 @@ const Navbar = () => {
 
   // App navbar — keeps existing internal navigation
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
-      <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+    <nav className="fixed top-0 left-0 right-0 z-50 safe-top-bar bg-background/80 backdrop-blur-md border-b border-border/50">
+      <div className="container mx-auto h-16 flex items-center justify-between">
         <Logo />
 
         <div className="hidden md:flex items-center gap-1">
@@ -228,7 +228,7 @@ const Navbar = () => {
 
       {open && (
         <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-md animate-fade-in">
-          <div className="container mx-auto px-6 py-4 flex flex-col gap-1">
+          <div className="container mx-auto py-4 flex flex-col gap-1">
             {appLinks.map((link) => (
               <Link
                 key={link.path}

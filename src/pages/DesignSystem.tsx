@@ -61,7 +61,7 @@ const DesignSystem = () => {
 
   return (
     <main className="min-h-dvh bg-background pt-24 pb-24">
-      <div className="container mx-auto px-4 max-w-5xl">
+      <div className="container mx-auto max-w-5xl">
         <header className="pb-8">
           <span className="type-label inline-flex items-center gap-2">
             <Sparkles className="size-3.5" aria-hidden="true" /> Fundamentos
@@ -187,7 +187,7 @@ const DesignSystem = () => {
               ))}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="ds-input">Input</Label>
                 <Input id="ds-input" placeholder="Digite aqui" />
@@ -263,7 +263,7 @@ const DesignSystem = () => {
           title="Componentes da marca"
           description="Componentes exclusivos do Evolua Plus, disponíveis em @/components/ds."
         >
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <EvolutionCard label="Peso atual" value={78.4} unit="kg" delta={-1.2} hint="Últimos 30 dias" />
             <GoalCard title="Calorias" current={1580} target={2100} unit=" kcal" />
             <NutritionCard title="Almoço" calories={620} protein={42} carbs={58} fat={18} />

@@ -3,12 +3,10 @@ import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const FinalCTA = () => (
-  <section className="py-24 px-6 bg-background">
+  <section className="py-24 bg-background">
     <div className="container mx-auto max-w-5xl">
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[hsl(143_64%_26%)] via-primary to-[hsl(var(--primary-glow))] p-10 sm:p-16 text-center shadow-premium">
         {/* Decorative glows */}
-        <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-white/10 blur-3xl" aria-hidden />
-        <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-white/10 blur-3xl" aria-hidden />
         <div
           className="absolute inset-0 opacity-[0.15]"
           style={{

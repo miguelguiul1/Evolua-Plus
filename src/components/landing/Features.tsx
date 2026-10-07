@@ -61,7 +61,7 @@ const features = [
 ];
 
 const Features = () => (
-  <section id="recursos" className="py-24 px-6 bg-background">
+  <section id="recursos" className="py-24 bg-background">
     <div className="container mx-auto max-w-6xl">
       <div className="text-center max-w-2xl mx-auto mb-14">
         <span className="inline-block mb-3 px-3 py-1 rounded-full bg-primary/10 text-primary font-display text-xs font-semibold tracking-wide uppercase">
@@ -75,7 +75,7 @@ const Features = () => (
         </p>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {features.map((f) => (
           <div
             key={f.title}

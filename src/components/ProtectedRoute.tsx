@@ -7,13 +7,13 @@ import ConsentScreen from "@/components/consent/ConsentScreen";
 import { useConsent } from "@/hooks/useConsent";
 
 const Spinner = () => (
-  <div className="min-h-screen flex items-center justify-center bg-background">
+  <div className="min-h-dvh flex items-center justify-center bg-background">
     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
   </div>
 );
 
 const SetupError = ({ onRetry }: { onRetry: () => void }) => (
-  <div className="min-h-screen bg-background flex items-center justify-center px-6">
+  <div className="min-h-dvh bg-background flex items-center justify-center px-6">
     <div className="text-center max-w-sm">
       <p className="text-foreground font-display font-semibold mb-2">Não foi possível carregar seus dados</p>
       <p className="text-sm text-muted-foreground mb-6">

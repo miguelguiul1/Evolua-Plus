@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
-import logoMark from "@/assets/logo-evolua-mark.png";
+// WebP de 416x240 (~24 KB), gerado do PNG de alta resolução (fonte dos ícones, não vai para o app).
+import logoMark from "@/assets/logo-evolua-mark.webp";
 import { cn } from "@/lib/utils";
 
 type Size = "sm" | "md" | "lg";
@@ -26,6 +27,8 @@ const BrandLogo = forwardRef<HTMLSpanElement, BrandLogoProps>(({ size = "sm", sh
   <span ref={ref} className={cn("inline-flex items-center gap-2", className)}>
     <img
       src={logoMark}
+      width={416}
+      height={240}
       alt="Evolua Plus"
       className={cn(markSize[size], "shrink-0 object-contain")}
       loading="eager"

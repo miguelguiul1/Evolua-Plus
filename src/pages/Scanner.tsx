@@ -105,8 +105,8 @@ const Scanner = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
-      <div className="container mx-auto px-6 max-w-3xl">
+    <div className="min-h-dvh bg-background pt-20 pb-10 md:pb-16">
+      <div className="container mx-auto max-w-3xl">
         <div className="text-center mb-10">
           <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium">
             🔬 Função principal
@@ -121,7 +121,7 @@ const Scanner = () => {
               ? "Leia o código de barras do produto e registre os dados nutricionais no seu diário"
               : "Tire uma foto da sua geladeira e a IA vai sugerir receitas práticas, saudáveis e econômicas"}
           </p>
-          <div className="mt-6 inline-flex p-1 rounded-full bg-secondary">
+          <div className="mt-6 flex w-full sm:inline-flex sm:w-auto p-1 rounded-full bg-secondary">
             {([
               ["alimento", "Alimento"],
               ["codigo", "Código de barras"],
@@ -131,7 +131,7 @@ const Scanner = () => {
               <button
                 key={id}
                 onClick={() => setTab(id)}
-                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors ${
+                className={`flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium leading-tight transition-colors ${
                   tab === id ? "bg-card text-foreground shadow-soft" : "text-muted-foreground"
                 }`}
               >

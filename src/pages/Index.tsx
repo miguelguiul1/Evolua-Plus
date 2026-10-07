@@ -13,7 +13,7 @@ import SiteFooter from "@/components/landing/SiteFooter";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background scroll-smooth">
+    <div className="min-h-dvh bg-background scroll-smooth">
       <HeroSection />
       <HowItWorks />
       <Benefits />

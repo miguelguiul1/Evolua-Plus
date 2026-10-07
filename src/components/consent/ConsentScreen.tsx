@@ -35,7 +35,7 @@ const ConsentScreen = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-10">
+    <div className="min-h-dvh bg-background flex items-center justify-center px-[var(--gutter)] py-10">
       <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-soft">
         <div className="flex items-center gap-3 mb-4">
           <ShieldCheck className="w-6 h-6 text-primary" aria-hidden="true" />
@@ -73,7 +73,7 @@ const ConsentScreen = () => {
         </Button>
 
         <div className="mt-6 flex flex-col sm:flex-row gap-2 sm:justify-between text-sm">
-          <Link to="/configuracoes" className="text-muted-foreground underline">
+          <Link to="/configuracoes" className="tap-link text-muted-foreground underline">
             Exportar ou excluir meus dados
           </Link>
           <button type="button" onClick={() => signOut()} className="text-muted-foreground underline text-left">

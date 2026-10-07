@@ -69,7 +69,7 @@ const FoodCalendar = ({ entries, selectedDate, onSelect, caloriesGoal }: Props) 
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 mb-1">
+      <div className="grid grid-cols-7 gap-0 sm:gap-1 -mx-3 sm:mx-0 mb-1">
         {WEEKDAYS.map((w, i) => (
           <span key={i} className="text-[10px] text-center text-muted-foreground font-medium">
             {w}
@@ -77,7 +77,7 @@ const FoodCalendar = ({ entries, selectedDate, onSelect, caloriesGoal }: Props) 
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-0 sm:gap-1 -mx-3 sm:mx-0">
         {days.map((d, i) => {
           if (!d) return <span key={`p${i}`} />;
           const iso = toISODate(d);
@@ -91,7 +91,7 @@ const FoodCalendar = ({ entries, selectedDate, onSelect, caloriesGoal }: Props) 
               disabled={isFuture}
               onClick={() => onSelect(iso)}
               aria-label={`Dia ${d.getDate()}`}
-              className={`aspect-square rounded-lg text-xs font-medium flex flex-col items-center justify-center gap-0.5 transition-all disabled:opacity-30 ${
+              className={`h-11 sm:h-auto sm:aspect-square min-w-0 rounded-lg text-xs font-medium flex flex-col items-center justify-center gap-0.5 transition-all disabled:opacity-30 ${
                 isSelected
                   ? "bg-primary text-primary-foreground"
                   : isToday

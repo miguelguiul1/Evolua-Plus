@@ -103,8 +103,8 @@ const Educacao = () => {
   const [tab, setTab] = useState<"mitos" | "macros" | "rotulos" | "estrategias">("mitos");
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
-      <div className="container mx-auto px-6 max-w-3xl">
+    <div className="min-h-dvh bg-background pt-20 pb-10 md:pb-16">
+      <div className="container mx-auto max-w-3xl">
         <div className="text-center mb-10">
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
             Educação <span className="text-primary">Alimentar</span>
@@ -192,7 +192,7 @@ const Educacao = () => {
                   <span className="text-2xl">{m.icon}</span>
                   <h3 className="font-display font-semibold text-foreground text-lg">{m.nome}</h3>
                 </div>
-                <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                   <div>
                     <p className="text-muted-foreground"><strong className="text-foreground">Função:</strong> {m.funcao}</p>
                   </div>

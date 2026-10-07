@@ -117,7 +117,7 @@ const App = () => {
           <RouteErrorBoundary>
             <Navbar />
             <Suspense fallback={<PageSkeleton />}>
-              <main id="main-content" className="contents">
+              <main id="main-content">
                 <Routes>
                   <Route path="/vendas" element={<Vendas />} />
                   <Route path="/checkout" element={<Checkout />} />

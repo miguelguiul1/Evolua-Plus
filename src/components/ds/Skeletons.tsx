@@ -36,14 +36,14 @@ export const ListSkeleton = ({ items = 4 }: { items?: number }) => (
 );
 
 export const PageSkeleton = () => (
-  <div className="min-h-screen bg-background pt-20 pb-16">
-    <div className="container mx-auto px-4 sm:px-6 max-w-5xl space-y-6">
+  <div className="min-h-dvh bg-background pt-20 pb-16">
+    <div className="container mx-auto max-w-5xl space-y-6">
       <div className="space-y-3">
         <Skeleton className="h-3 w-24" />
         <Skeleton className="h-9 w-64" />
       </div>
       <StatGridSkeleton />
-      <div className="grid lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <CardSkeleton lines={4} />
         <CardSkeleton lines={4} />
       </div>

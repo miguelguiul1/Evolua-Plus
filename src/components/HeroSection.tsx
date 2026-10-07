@@ -1,37 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, ShieldCheck, Star, Zap, PlayCircle } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardMockup from "./landing/DashboardMockup";
 
 const HeroSection = () => {
-  const [scrollY, setScrollY] = useState(0);
-
-  useEffect(() => {
-    let raf = 0;
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        setScrollY(window.scrollY);
-      });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
-
   const scrollTo = (id: string) => () =>
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
   return (
-    <section className="relative min-h-[92vh] flex items-center overflow-hidden hero-radial pt-28 pb-20">
-      {/* Ambient orbs */}
-      <div className="absolute -top-40 -left-32 w-[38rem] h-[38rem] rounded-full bg-primary/20 blur-3xl animate-float-slow" aria-hidden />
-      <div className="absolute -bottom-40 -right-40 w-[40rem] h-[40rem] rounded-full bg-[hsl(var(--primary-glow))]/15 blur-3xl animate-float" aria-hidden />
-
+    <section className="relative min-h-[92dvh] flex items-center overflow-hidden hero-radial pt-28 pb-20">
       {/* Fine grid */}
       <div
         className="absolute inset-0 opacity-[0.25] pointer-events-none"
@@ -44,9 +21,9 @@ const HeroSection = () => {
         aria-hidden
       />
 
-      <div className="relative z-10 container mx-auto px-6 grid lg:grid-cols-[1.05fr,1fr] gap-12 lg:gap-16 items-center">
+      <div className="relative z-10 container mx-auto grid grid-cols-1 lg:grid-cols-[1.05fr,1fr] gap-12 lg:gap-16 items-center">
         {/* Copy */}
-        <div className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
+        <div className="min-w-0 text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
           <div className="animate-fade-up">
             <span className="inline-flex items-center gap-2 mb-6 px-3.5 py-1.5 rounded-full glass border border-primary/15 text-primary font-display text-xs font-semibold tracking-wide uppercase">
               <Sparkles className="w-3.5 h-3.5" />
@@ -109,10 +86,9 @@ const HeroSection = () => {
 
         {/* Mockup */}
         <div
-          className="relative w-full max-w-xl mx-auto lg:mx-0 animate-fade-up"
-          style={{ animationDelay: "0.4s", transform: `translateY(${scrollY * -0.03}px)` }}
+          className="relative min-w-0 w-full max-w-xl mx-auto lg:mx-0 animate-fade-up"
+          style={{ animationDelay: "0.4s" }}
         >
-          <div className="absolute -inset-6 rounded-[2rem] bg-gradient-to-br from-primary/20 via-primary/5 to-[hsl(var(--primary-glow))]/20 blur-2xl" aria-hidden />
           <DashboardMockup className="relative lg:rotate-1 hover:rotate-0 transition-transform duration-700 shadow-premium" />
 
           <div className="hidden md:flex absolute -left-6 top-20 items-center gap-2 rounded-full glass border border-border/60 shadow-soft px-3 py-1.5 text-xs font-display font-semibold text-foreground animate-float-slow">

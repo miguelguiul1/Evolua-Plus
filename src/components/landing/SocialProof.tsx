@@ -48,9 +48,9 @@ const testimonials = [
 ];
 
 const SocialProof = () => (
-  <section className="py-24 px-6 bg-background">
+  <section className="py-24 bg-background">
     <div className="container mx-auto max-w-6xl">
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-20">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-20">
         {stats.map((s) => (
           <div key={s.label} className="text-center rounded-2xl border border-border/60 bg-card p-6 hover:border-primary/30 transition-colors">
             <div className="font-display text-3xl sm:text-4xl font-bold text-gradient-primary">
@@ -76,7 +76,7 @@ const SocialProof = () => (
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {testimonials.map((t, i) => (
           <div
             key={i}

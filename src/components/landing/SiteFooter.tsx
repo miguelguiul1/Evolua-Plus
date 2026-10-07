@@ -5,7 +5,7 @@ import BrandLogo from "@/components/BrandLogo";
 const SiteFooter = () => (
   <footer className="border-t border-border bg-secondary/40 relative overflow-hidden">
     <div className="absolute inset-0 bg-mesh pointer-events-none opacity-60" aria-hidden />
-    <div className="container mx-auto px-6 py-16 grid gap-10 md:grid-cols-5 relative">
+    <div className="container mx-auto py-16 grid grid-cols-1 gap-10 md:grid-cols-5 relative">
       <div className="md:col-span-2">
         <Link to="/" className="inline-flex items-center gap-2" aria-label="Evolua Plus — página inicial">
           <BrandLogo size="md" />
@@ -25,7 +25,7 @@ const SiteFooter = () => (
               key={label}
               href={href}
               aria-label={label}
-              className="w-9 h-9 rounded-lg border border-border/60 bg-card flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors"
+              className="w-11 h-11 rounded-lg border border-border/60 bg-card flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors"
             >
               <Icon className="w-4 h-4" />
             </a>
@@ -63,7 +63,7 @@ const SiteFooter = () => (
     </div>
 
     <div className="border-t border-border/60 relative">
-      <div className="container mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+      <div className="container mx-auto py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
         <p>© {new Date().getFullYear()} Evolua Plus. Todos os direitos reservados.</p>
         <p className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />

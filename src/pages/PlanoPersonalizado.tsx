@@ -125,7 +125,7 @@ const PlanoPersonalizado = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-[calc(6rem+env(safe-area-inset-bottom))] overflow-x-hidden">
+    <div className="min-h-dvh bg-background pt-20 pb-[calc(6rem+env(safe-area-inset-bottom))] overflow-x-hidden">
       <div className="w-full max-w-2xl mx-auto px-5">
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
