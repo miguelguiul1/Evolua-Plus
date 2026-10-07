@@ -370,6 +370,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_consents: {
+        Row: {
+          created_at: string
+          granted: boolean
+          id: string
+          purpose: string
+          source: string
+          text_version: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted: boolean
+          id?: string
+          purpose: string
+          source?: string
+          text_version: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted?: boolean
+          id?: string
+          purpose?: string
+          source?: string
+          text_version?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_goals: {
         Row: {
           bmr: number | null
@@ -445,6 +475,81 @@ export type Database = {
           restrictions?: string[] | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_routine_profile: {
+        Row: {
+          breakfast_time: string | null
+          breakfast_usual: string | null
+          busy_periods: string[]
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          dinner_time: string | null
+          dinner_usual: string | null
+          id: string
+          little_time_to_cook: boolean
+          lunch_time: string | null
+          lunch_usual: string | null
+          routine_notes: string | null
+          snack_time: string | null
+          snack_usual: string | null
+          sports: string[]
+          training_frequency: string | null
+          training_period: string | null
+          trains: boolean
+          updated_at: string
+          user_id: string
+          water_ml: number | null
+        }
+        Insert: {
+          breakfast_time?: string | null
+          breakfast_usual?: string | null
+          busy_periods?: string[]
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          dinner_time?: string | null
+          dinner_usual?: string | null
+          id?: string
+          little_time_to_cook?: boolean
+          lunch_time?: string | null
+          lunch_usual?: string | null
+          routine_notes?: string | null
+          snack_time?: string | null
+          snack_usual?: string | null
+          sports?: string[]
+          training_frequency?: string | null
+          training_period?: string | null
+          trains?: boolean
+          updated_at?: string
+          user_id: string
+          water_ml?: number | null
+        }
+        Update: {
+          breakfast_time?: string | null
+          breakfast_usual?: string | null
+          busy_periods?: string[]
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          dinner_time?: string | null
+          dinner_usual?: string | null
+          id?: string
+          little_time_to_cook?: boolean
+          lunch_time?: string | null
+          lunch_usual?: string | null
+          routine_notes?: string | null
+          snack_time?: string | null
+          snack_usual?: string | null
+          sports?: string[]
+          training_frequency?: string | null
+          training_period?: string | null
+          trains?: boolean
+          updated_at?: string
+          user_id?: string
+          water_ml?: number | null
         }
         Relationships: []
       }
