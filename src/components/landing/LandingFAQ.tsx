@@ -18,7 +18,7 @@ const faqs = [
 ];
 
 const LandingFAQ = () => (
-  <section id="faq" className="py-24 px-6 bg-background">
+  <section id="faq" className="py-24 bg-background">
     <div className="container mx-auto max-w-3xl">
       <div className="text-center mb-12">
         <span className="inline-block mb-3 px-3 py-1 rounded-full bg-primary/10 text-primary font-display text-xs font-semibold tracking-wide uppercase">

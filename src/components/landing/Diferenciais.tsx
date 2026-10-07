@@ -29,7 +29,7 @@ const Cell = ({ v }: { v: boolean | "parcial" }) => {
 };
 
 const Diferenciais = () => (
-  <section id="diferenciais" className="py-24 px-6 bg-background">
+  <section id="diferenciais" className="py-24 bg-background">
     <div className="container mx-auto max-w-5xl">
       <div className="text-center max-w-2xl mx-auto mb-12">
         <span className="inline-block mb-3 px-3 py-1 rounded-full bg-primary/10 text-primary font-display text-xs font-semibold tracking-wide uppercase">

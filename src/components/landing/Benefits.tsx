@@ -12,7 +12,7 @@ const benefits = [
 ];
 
 const Benefits = () => (
-  <section id="beneficios" className="py-24 px-6 bg-secondary/40 relative overflow-hidden">
+  <section id="beneficios" className="py-24 bg-secondary/40 relative overflow-hidden">
     <div className="absolute inset-0 bg-mesh pointer-events-none" aria-hidden />
     <div className="container mx-auto max-w-6xl relative">
       <div className="text-center max-w-2xl mx-auto mb-14">
@@ -26,7 +26,7 @@ const Benefits = () => (
           Menos fricção, mais resultado. Tudo o que você precisa em um só lugar.
         </p>
       </div>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {benefits.map((b) => (
           <div
             key={b.title}

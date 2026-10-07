@@ -75,7 +75,7 @@ const anual: PricingCard = {
 const plans = [gratuito, mensal, anual];
 
 const Pricing = () => (
-  <section id="planos" className="py-24 px-6 bg-secondary/40 relative overflow-hidden">
+  <section id="planos" className="py-24 bg-secondary/40 relative overflow-hidden">
     <div className="absolute inset-0 bg-mesh pointer-events-none" aria-hidden />
     <div className="container mx-auto max-w-6xl relative">
       <div className="text-center max-w-2xl mx-auto mb-12">
@@ -90,7 +90,7 @@ const Pricing = () => (
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6 items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
         {plans.map((p) => (
           <div
             key={p.name}

@@ -39,8 +39,8 @@ const MemoriaIA = () => {
   };
 
   return (
-    <main className="min-h-screen bg-background pt-24 pb-24 md:pb-16">
-      <div className="container mx-auto px-4 max-w-3xl">
+    <main className="min-h-dvh bg-background pt-24 pb-10 md:pb-16">
+      <div className="container mx-auto max-w-3xl">
         <header className="mb-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-3">
             <Brain className="w-3 h-3" /> Memória da IA

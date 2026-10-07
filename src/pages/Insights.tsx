@@ -55,8 +55,8 @@ const Insights = () => {
   const unlocked = e.achievements.filter((a) => a.unlocked).length;
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
-      <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
+    <div className="min-h-dvh bg-background pt-20 pb-10 md:pb-16">
+      <div className="container mx-auto max-w-5xl">
         <header className="mb-6">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
             <Sparkles className="w-3 h-3" /> Central de insights
@@ -69,7 +69,7 @@ const Insights = () => {
           </p>
         </header>
 
-        <div className="grid lg:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
           <ScoreCard score={e.today.score} message={e.today.message} breakdown={e.today.breakdown} />
           <div className="space-y-4">
             <StreakCard current={e.streak.current} best={e.streak.best} />
@@ -87,7 +87,7 @@ const Insights = () => {
           <StatCard icon={Sparkles} label="Score médio" value={`${e.averages.score}`} hint="últimos 7 dias" />
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Panel title="Calorias e proteínas na semana" icon={TrendingUp}>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={e.week}>
@@ -190,7 +190,7 @@ const Insights = () => {
         </div>
 
         {(e.bestDays.length > 0 || e.missingDays.length > 0) && (
-          <div className="grid sm:grid-cols-2 gap-4 mt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
             <Panel title="Melhores dias" icon={Trophy}>
               {e.bestDays.length ? (
                 <ul className="space-y-2 text-sm">

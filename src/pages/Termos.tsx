@@ -13,8 +13,8 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
  * Placeholders listados em LGPD_RELATORIO.md.
  */
 const Termos = () => (
-  <div className="min-h-screen bg-background pt-24 pb-20">
-    <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
+  <div className="min-h-dvh bg-background pt-24 pb-20 [overflow-wrap:anywhere]">
+    <div className="container mx-auto max-w-3xl">
       <header className="mb-10">
         <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
           Termos de <span className="text-primary">Uso</span>
@@ -147,7 +147,7 @@ const Termos = () => (
       </div>
 
       <div className="mt-12 text-sm">
-        <Link to="/" className="text-primary hover:underline">← Voltar ao início</Link>
+        <Link to="/" className="tap-link text-primary hover:underline">← Voltar ao início</Link>
       </div>
     </div>
   </div>

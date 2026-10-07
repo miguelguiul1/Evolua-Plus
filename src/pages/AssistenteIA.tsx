@@ -15,6 +15,7 @@ import {
 } from "@/hooks/useNutrition";
 import { memoryToPrompt, useAiMemory } from "@/hooks/useAiMemory";
 import { useRequireAiConsent } from "@/components/consent/aiConsentContext";
+import { useVisualViewportHeight } from "@/hooks/useVisualViewportHeight";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -41,6 +42,8 @@ const AssistenteIA = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
+  useVisualViewportHeight();
 
   const todayTotals = useMemo(
     () => sumTotals(weekLog.filter((e) => e.logged_at === today)),
@@ -183,8 +186,8 @@ const AssistenteIA = () => {
   }, [prefill, user]);
 
   return (
-    <main className="min-h-screen pt-24 pb-12 bg-background">
-      <div className="container mx-auto px-4 max-w-3xl">
+    <main className="min-h-dvh pt-24 pb-12 bg-background">
+      <div className="container mx-auto max-w-3xl">
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-3">
             <Sparkles className="w-3 h-3" /> Assistente inteligente
@@ -219,7 +222,11 @@ const AssistenteIA = () => {
           </div>
         )}
 
-        <Card className="border-border/60 bg-card overflow-hidden flex flex-col h-[60vh]">
+        {/* Altura = área visível (encolhe com o teclado) − barra do topo − barra inferior − safe-areas. */}
+        <Card
+          ref={chatRef}
+          className="border-border/60 bg-card overflow-hidden flex flex-col min-h-[18rem] h-[calc(var(--vvh,100dvh)-var(--safe-top)-var(--tabbar-h)-var(--safe-bottom)-5.5rem)] md:h-[70dvh]"
+        >
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((m, i) => (
               <div key={i} className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
@@ -272,10 +279,12 @@ const AssistenteIA = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && send()}
+                // Com o teclado aberto, mantém a caixa da conversa inteira à vista.
+                onFocus={() => setTimeout(() => chatRef.current?.scrollIntoView({ block: "end", behavior: "smooth" }), 300)}
                 placeholder="Pergunte qualquer coisa sobre nutrição…"
                 disabled={loading}
               />
-              <Button onClick={() => send()} disabled={loading || !input.trim()} size="icon">
+              <Button onClick={() => send()} disabled={loading || !input.trim()} size="icon" aria-label="Enviar mensagem" className="shrink-0">
                 <Send className="w-4 h-4" />
               </Button>
             </div>

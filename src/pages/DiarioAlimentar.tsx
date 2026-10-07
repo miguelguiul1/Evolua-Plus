@@ -278,8 +278,8 @@ const DiarioAlimentar = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
-      <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
+    <div className="min-h-dvh bg-background pt-20 pb-10 md:pb-16">
+      <div className="container mx-auto max-w-4xl">
         <div className="text-center mb-8">
           <span className="inline-block mb-3 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium">
             📊 Acompanhamento diário
@@ -302,9 +302,9 @@ const DiarioAlimentar = () => {
           </Button>
         </div>
 
-        <div className="grid lg:grid-cols-[320px_1fr] gap-5 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-5 items-start">
           {/* Coluna lateral */}
-          <aside className="space-y-5 lg:sticky lg:top-24">
+          <aside className="min-w-0 space-y-5 lg:sticky lg:top-24">
             <FoodCalendar
               entries={rangeEntries}
               selectedDate={selectedDate}
@@ -581,7 +581,7 @@ const DiarioAlimentar = () => {
                   </div>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {analysis.excessos?.length > 0 && (
                     <div className="bg-card rounded-2xl shadow-soft p-4">
                       <h3 className="font-display text-sm font-semibold text-destructive mb-2 flex items-center gap-1">

@@ -87,7 +87,7 @@ const ResetPassword = () => {
 
   if (status === "checking") {
     return (
-      <div className="min-h-screen bg-background pt-20 pb-16 flex items-center justify-center">
+      <div className="min-h-dvh bg-background pt-20 pb-16 flex items-center justify-center">
         <p className="text-muted-foreground">Validando link...</p>
       </div>
     );
@@ -95,7 +95,7 @@ const ResetPassword = () => {
 
   if (status === "invalid") {
     return (
-      <div className="min-h-screen bg-background pt-20 pb-16 flex flex-col items-center justify-center gap-4 px-6 text-center">
+      <div className="min-h-dvh bg-background pt-20 pb-16 flex flex-col items-center justify-center gap-4 px-6 text-center">
         <p className="text-muted-foreground">Link inválido ou expirado.</p>
         <Button variant="hero" onClick={() => navigate("/auth")}>Pedir um novo link</Button>
       </div>
@@ -103,7 +103,7 @@ const ResetPassword = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-16 flex items-center justify-center">
+    <div className="min-h-dvh bg-background pt-20 pb-16 flex items-center justify-center">
       <div className="w-full max-w-md mx-auto px-6">
         <div className="text-center mb-8">
           <h1 className="font-display text-3xl font-bold text-foreground">Nova senha</h1>

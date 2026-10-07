@@ -19,7 +19,7 @@ const steps = [
 ];
 
 const HowItWorks = () => (
-  <section id="como-funciona" className="py-24 px-6 bg-background relative">
+  <section id="como-funciona" className="py-24 bg-background relative">
     <div className="container mx-auto max-w-6xl">
       <div className="text-center max-w-2xl mx-auto mb-14">
         <span className="inline-block mb-3 px-3 py-1 rounded-full bg-primary/10 text-primary font-display text-xs font-semibold tracking-wide uppercase">
@@ -33,7 +33,7 @@ const HowItWorks = () => (
         </p>
       </div>
 
-      <div className="relative grid md:grid-cols-3 gap-6 md:gap-8">
+      <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
         <div
           className="hidden md:block absolute top-10 left-[16%] right-[16%] h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
           aria-hidden

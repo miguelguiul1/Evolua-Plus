@@ -228,8 +228,8 @@ const Evolucao = () => {
   };
 
   return (
-    <main className="min-h-screen pt-24 pb-16 bg-background">
-      <div className="container mx-auto px-4 max-w-5xl">
+    <main className="min-h-dvh pt-24 pb-16 bg-background">
+      <div className="container mx-auto max-w-5xl">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-3">
@@ -257,7 +257,7 @@ const Evolucao = () => {
         </div>
 
         {/* Índice + gamificação */}
-        <div className="grid md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card className="border-border/60 bg-gradient-to-br from-primary/10 to-transparent">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-2">

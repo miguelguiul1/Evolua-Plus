@@ -166,8 +166,8 @@ const Configuracoes = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
-      <div className="container mx-auto px-4 sm:px-6 max-w-2xl">
+    <div className="min-h-dvh bg-background pt-20 pb-10 md:pb-16">
+      <div className="container mx-auto max-w-2xl">
         <header className="text-center mb-8">
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
             Config<span className="text-primary">urações</span>
@@ -237,7 +237,7 @@ const Configuracoes = () => {
           </Section>
 
           <Section icon={Ruler} title="Preferências">
-            <div className="grid sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <label className="text-xs text-muted-foreground">
                 Idioma
                 <select
@@ -291,9 +291,9 @@ const Configuracoes = () => {
           </Section>
 
           <div className="flex justify-center gap-4 pt-2 text-xs text-muted-foreground">
-            <Link to="/termos" className="hover:text-primary transition-colors">Termos de uso</Link>
+            <Link to="/termos" className="tap-link hover:text-primary transition-colors">Termos de uso</Link>
             <span aria-hidden>·</span>
-            <Link to="/privacidade" className="hover:text-primary transition-colors">Política de privacidade</Link>
+            <Link to="/privacidade" className="tap-link hover:text-primary transition-colors">Política de privacidade</Link>
           </div>
         </div>
       </div>

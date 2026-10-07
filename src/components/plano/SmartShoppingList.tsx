@@ -96,7 +96,7 @@ const SmartShoppingList = ({ source, onRegenerate, regenerating }: Props) => {
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                 {c.emoji} {c.label}
               </p>
-              <div className="grid sm:grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                 {list.map((i) => (
                   <div key={i.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-secondary/50 group">
                     <input

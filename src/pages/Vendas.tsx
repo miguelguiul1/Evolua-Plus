@@ -189,7 +189,7 @@ const Vendas = () => {
   const t = content[lang];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       {/* Language Switcher */}
       <div className="fixed top-20 right-4 z-50">
         <div className="flex items-center gap-1 bg-card border border-border rounded-full p-1 shadow-md">
@@ -221,7 +221,7 @@ const Vendas = () => {
       {/* Hero */}
       <section className="relative overflow-hidden pt-20 pb-16 sm:pt-28 sm:pb-24">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-        <div className="relative z-10 container mx-auto px-6 text-center max-w-3xl">
+        <div className="relative z-10 container mx-auto text-center max-w-3xl">
           <span className="inline-block mb-5 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-semibold tracking-wide">
             {t.badge}
           </span>
@@ -235,12 +235,12 @@ const Vendas = () => {
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link to={CHECKOUT_URL}>
-              <Button variant="hero" size="xl" className="group">
+            <Button asChild variant="hero" size="xl" className="group">
+              <Link to={CHECKOUT_URL}>
                 {t.ctaHero}
                 <ArrowRight className="w-5 h-5 ml-1 transition-transform group-hover:translate-x-1" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
             <span className="text-sm text-muted-foreground flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-primary" />
               {t.guarantee}
@@ -251,7 +251,7 @@ const Vendas = () => {
 
       {/* Benefits */}
       <section className="py-16 sm:py-24 bg-card/50">
-        <div className="container mx-auto px-6 max-w-5xl">
+        <div className="container mx-auto max-w-5xl">
           <h2 className="font-display text-3xl sm:text-4xl font-bold text-center text-foreground mb-4">
             {t.benefitsTitle}
           </h2>
@@ -259,7 +259,7 @@ const Vendas = () => {
             {t.benefitsSub}
           </p>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {t.benefits.map((b, i) => {
               const Icon = benefitIcons[i];
               return (
@@ -289,7 +289,7 @@ const Vendas = () => {
 
       {/* Social Proof */}
       <section className="py-16 sm:py-24">
-        <div className="container mx-auto px-6 max-w-4xl">
+        <div className="container mx-auto max-w-4xl">
           <h2 className="font-display text-3xl sm:text-4xl font-bold text-center text-foreground mb-4">
             {t.testimonialsTitle}
           </h2>
@@ -297,7 +297,7 @@ const Vendas = () => {
             {t.testimonialsSub}
           </p>
 
-          <div className="grid sm:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {t.testimonials.map((tm) => (
               <Card key={tm.name} className="border-border/60 bg-card">
                 <CardContent className="p-6">
@@ -321,7 +321,7 @@ const Vendas = () => {
 
       {/* Pricing CTA */}
       <section className="py-16 sm:py-24 bg-card/50">
-        <div className="container mx-auto px-6 max-w-5xl">
+        <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-10">
             <span className="text-sm font-display font-semibold text-primary">
               {t.pricingBadge}
@@ -331,7 +331,7 @@ const Vendas = () => {
             </h2>
             <p className="text-muted-foreground text-sm mt-2">{t.pricingSub}</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {PLAN_KEYS.map((key) => {
               const p = PLANS[key];
               const price = planPrice(p, lang);
@@ -339,7 +339,7 @@ const Vendas = () => {
               const [intPart, decPart] = priceStr.split(lang === "pt" ? "," : ".");
               const badge = p.badge[lang];
               return (
-                <Card key={p.key} className={`relative border ${p.highlight ? "border-primary shadow-lg scale-105" : "border-border/60"} bg-background overflow-hidden`}>
+                <Card key={p.key} className={`relative border ${p.highlight ? "border-primary shadow-lg md:scale-105" : "border-border/60"} bg-background overflow-hidden`}>
                   {badge && (
                     <div className={`absolute top-0 left-0 right-0 py-1.5 text-center text-xs font-semibold ${p.highlight ? "bg-primary text-primary-foreground" : "bg-accent/20 text-accent-foreground"}`}>
                       {badge}
@@ -381,7 +381,7 @@ const Vendas = () => {
 
       {/* FAQ */}
       <section className="py-16 sm:py-24">
-        <div className="container mx-auto px-6 max-w-2xl">
+        <div className="container mx-auto max-w-2xl">
           <h2 className="font-display text-3xl sm:text-4xl font-bold text-center text-foreground mb-12">
             {t.faqTitle}
           </h2>
@@ -395,25 +395,25 @@ const Vendas = () => {
 
       {/* Final CTA */}
       <section className="py-16 sm:py-24 bg-primary/5">
-        <div className="container mx-auto px-6 text-center max-w-2xl">
+        <div className="container mx-auto text-center max-w-2xl">
           <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-4">
             {t.finalTitle}
           </h2>
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">
             {t.finalSub}
           </p>
-          <Link to={CHECKOUT_URL}>
-            <Button variant="hero" size="xl" className="group">
+          <Button asChild variant="hero" size="xl" className="group">
+            <Link to={CHECKOUT_URL}>
               {t.finalCta}
               <ArrowRight className="w-5 h-5 ml-1 transition-transform group-hover:translate-x-1" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="py-8 border-t border-border">
-        <div className="container mx-auto px-6 text-center">
+        <div className="container mx-auto text-center">
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Evolua Plus · {t.footerRights}
           </p>

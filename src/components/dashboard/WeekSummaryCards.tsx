@@ -54,7 +54,7 @@ const WeekSummaryCards = () => {
     frases.push("Registre peso e medidas por alguns dias para acompanhar sua evolução automática aqui.");
 
   return (
-    <div className="grid lg:grid-cols-2 gap-4 mb-4">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
       <section className="bg-card rounded-2xl shadow-soft border border-border/50 p-5">
         <h2 className="font-display font-semibold text-foreground flex items-center gap-2 mb-4">
           <span className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">

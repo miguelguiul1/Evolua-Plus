@@ -91,8 +91,8 @@ const Guias = () => {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
-      <div className="container mx-auto px-6 max-w-3xl">
+    <div className="min-h-dvh bg-background pt-20 pb-10 md:pb-16">
+      <div className="container mx-auto max-w-3xl">
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-3">
             <BookOpen className="w-3 h-3" /> Guias práticos

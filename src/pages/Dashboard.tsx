@@ -104,8 +104,8 @@ const Dashboard = () => {
   if (engagement.loading) return <PageSkeleton />;
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
-      <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
+    <div className="min-h-dvh bg-background pt-20 pb-10 md:pb-16">
+      <div className="container mx-auto max-w-5xl">
         <header className="mb-6">
           <p className="text-sm text-muted-foreground">{greeting()},</p>
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
@@ -196,7 +196,7 @@ const Dashboard = () => {
         ) : (
           <>
             {/* Score e sequência */}
-            <div className="grid lg:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
               <ScoreCard score={engagement.today.score} message={engagement.today.message} compact />
               <div className="space-y-4">
                 <StreakCard current={engagement.streak.current} best={engagement.streak.best} />
@@ -225,7 +225,7 @@ const Dashboard = () => {
               ))}
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
               <WaterTracker compact />
 
               {/* Refeições */}
@@ -287,7 +287,7 @@ const Dashboard = () => {
                   </p>
                 </div>
               </div>
-              <Link to="/preferencias" className="text-sm font-medium text-primary hover:underline">Ajustar</Link>
+              <Link to="/preferencias" className="tap-link text-sm font-medium text-primary hover:underline">Ajustar</Link>
             </div>
           </>
         )}

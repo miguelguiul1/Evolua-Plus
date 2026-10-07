@@ -148,11 +148,11 @@ const Auth = () => {
 
   if (showWelcome) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background overflow-hidden">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background overflow-hidden pt-[var(--safe-top)] pb-[var(--safe-bottom)]">
         {/* Gradient backdrop */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
-        <div className="absolute -top-32 -left-32 w-[36rem] h-[36rem] rounded-full bg-primary/20 blur-3xl animate-pulse" />
-        <div className="absolute -bottom-40 -right-40 w-[40rem] h-[40rem] rounded-full bg-accent/15 blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+        <div className="absolute -top-32 -left-32 w-[36rem] h-[36rem] rounded-full bg-primary/20 blur-3xl" aria-hidden="true" />
+        <div className="absolute -bottom-40 -right-40 w-[40rem] h-[40rem] rounded-full bg-accent/15 blur-3xl" aria-hidden="true" />
 
         {/* Floating decorative icons */}
         <Leaf className="absolute top-[18%] left-[12%] w-8 h-8 text-primary/40 animate-fade-in" style={{ animationDelay: "0.3s", animationDuration: "1s" }} />
@@ -214,7 +214,7 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-16 flex items-center justify-center">
+    <div className="min-h-dvh bg-background pt-20 pb-16 flex items-center justify-center">
       <div className="w-full max-w-md mx-auto px-6">
         <div className="text-center mb-8">
           <h1 className="font-display text-3xl font-bold text-foreground">

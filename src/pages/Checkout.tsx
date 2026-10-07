@@ -71,10 +71,10 @@ const Checkout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       {/* Top bar */}
       <div className="border-b border-border bg-card/50 backdrop-blur">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="container mx-auto py-4 flex items-center justify-between">
           <Link
             to="/vendas"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -89,7 +89,7 @@ const Checkout = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-10 max-w-6xl">
+      <div className="container mx-auto py-10 max-w-6xl">
         <div className="text-center mb-10">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-display font-semibold">
             <Sparkles className="w-3.5 h-3.5" />
@@ -103,7 +103,7 @@ const Checkout = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_400px] gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8">
           {/* Left: form + plans */}
           <div className="space-y-8">
             {/* Plans */}
@@ -204,7 +204,7 @@ const Checkout = () => {
                       <p id="name-error" className="text-xs text-destructive">{errors.name}</p>
                     )}
                   </div>
-                  <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="grid gap-2">
                       <Label htmlFor="email">E-mail</Label>
                       <Input

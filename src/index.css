@@ -1,4 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+/* Fontes self-hosted (woff2, subconjunto latino com acentos do português, peso 400–700).
+   Antes vinham por @import do Google Fonts, que bloqueava a renderização e dependia de rede externa.
+   Licença: SIL Open Font License 1.1 (public/fonts/LICENSE-*.txt). */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/dm-sans-latin-400-700.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'DM Sans';
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/dm-sans-latin-400-700-italic.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-latin-400-700.woff2') format('woff2');
+}
 
 @tailwind base;
 @tailwind components;
@@ -327,6 +350,103 @@
   ::selection {
     background: hsl(var(--primary) / 0.18);
     color: hsl(var(--primary));
+  }
+
+  /* =====================================================================
+     BASE MOBILE — celular primeiro (360–412 px), app Android e PWA no iPhone
+     ===================================================================== */
+  :root {
+    /* Margem lateral única do app (o `container` do Tailwind usa este valor). */
+    --gutter: 1.25rem;
+    /* Altura útil da barra inferior; o espaço reservado (--tabbar-h) só existe quando ela aparece. */
+    --tabbar-content-h: 4rem;
+    --tabbar-h: 0px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+  }
+
+  @media (max-width: 767.98px) {
+    html.has-tabbar { --tabbar-h: var(--tabbar-content-h); }
+  }
+
+  /* O conteúdo nunca fica sob o notch, a barra do iPhone ou a barra inferior do app. */
+  #main-content {
+    display: block;
+    padding-top: var(--safe-top);
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+    padding-bottom: calc(var(--tabbar-h) + var(--safe-bottom));
+  }
+
+  /* Link solto (fora de uma frase) com área de toque de 44px, sem mudar o visual do texto. */
+  .tap-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* Barras fixas no topo: ficam abaixo do notch/status bar e longe das bordas arredondadas. */
+  .safe-top-bar {
+    padding-top: var(--safe-top);
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+  }
+
+  /* dvh acompanha a barra do navegador no celular; navegadores sem dvh usam vh. */
+  @supports not (height: 100dvh) {
+    .min-h-dvh { min-height: 100vh; }
+    .h-dvh { height: 100vh; }
+    .max-h-dvh { max-height: 100vh; }
+  }
+
+  /* iOS dá zoom ao focar campos com fonte < 16px: campos sempre com 16px ou mais. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  select,
+  textarea {
+    font-size: max(1rem, 16px) !important;
+  }
+
+  /* Alvos de toque >= 44px em telas de toque. Links no meio de frases ficam de fora
+     (exceção da WCAG 2.5.8); a altura mínima não vale para elementos inline. */
+  @media (pointer: coarse) {
+    /* :where() = especificidade zero: um componente ajusta com uma classe comum (ex.: min-w-0). */
+    :where(
+      button:not([role="checkbox"]):not([role="switch"]):not([role="radio"]),
+      [role="button"], [role="tab"], [role="option"], [role="menuitem"],
+      select,
+      input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]),
+      summary,
+      a.inline-flex, a.flex, a.block, a.inline-block,
+      label.inline-flex, label.flex
+    ) {
+      min-height: 44px;
+    }
+    /* Largura mínima de 44px para botões e abas (inclui botões só com ícone: fechar, setas, enviar). */
+    :where(
+      button:not([role="checkbox"]):not([role="switch"]):not([role="radio"]),
+      [role="button"], [role="tab"],
+      a.inline-flex:has(> svg:only-child)
+    ) {
+      min-width: 44px;
+    }
+    /* Caixas de seleção e switches mantêm o desenho, mas a área de toque cresce para 44px. */
+    [role="checkbox"],
+    [role="switch"],
+    [role="radio"] {
+      position: relative;
+    }
+    [role="checkbox"]::after,
+    [role="switch"]::after,
+    [role="radio"]::after {
+      content: "";
+      position: absolute;
+      inset: 50% auto auto 50%;
+      width: 44px;
+      height: 44px;
+      transform: translate(-50%, -50%);
+    }
   }
 
   /* Foco visível consistente e acessível em toda a plataforma */

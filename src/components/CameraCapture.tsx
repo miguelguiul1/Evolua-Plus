@@ -97,7 +97,7 @@ const CameraCapture = ({ open, onClose, onCapture, hint }: CameraCaptureProps) =
 
   return (
     <div className="fixed inset-0 z-[80] bg-black/95 flex flex-col" role="dialog" aria-modal="true" aria-label="Câmera">
-      <div className="flex items-center justify-between px-4 py-3 text-white">
+      <div className="safe-top-bar flex items-center justify-between px-4 py-3 text-white">
         <span className="text-sm font-medium">{hint ?? "Enquadre e toque para fotografar"}</span>
         <div className="flex items-center gap-1">
           <Button

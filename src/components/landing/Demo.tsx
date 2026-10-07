@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { LayoutDashboard, Camera, ChefHat, Bot, Library, CalendarRange } from "lucide-react";
 import DashboardMockup from "./DashboardMockup";
 
@@ -119,25 +119,10 @@ const MockShell = ({ children }: { children: React.ReactNode }) => (
 
 const Demo = () => {
   const [active, setActive] = useState(tabs[0].id);
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const [offset, setOffset] = useState(0);
-
-  useEffect(() => {
-    const onScroll = () => {
-      if (!sectionRef.current) return;
-      const rect = sectionRef.current.getBoundingClientRect();
-      const progress = 1 - Math.max(0, Math.min(1, rect.top / window.innerHeight));
-      setOffset(progress * -20);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   const current = tabs.find((t) => t.id === active) ?? tabs[0];
 
   return (
-    <section id="demonstracao" className="py-24 px-6 bg-secondary/40 relative overflow-hidden" ref={sectionRef}>
+    <section id="demonstracao" className="py-24 bg-secondary/40 relative overflow-hidden">
       <div className="absolute inset-0 bg-mesh pointer-events-none" aria-hidden />
       <div className="container mx-auto max-w-6xl relative">
         <div className="text-center max-w-2xl mx-auto mb-12">
@@ -172,11 +157,7 @@ const Demo = () => {
           })}
         </div>
 
-        <div
-          className="relative max-w-2xl mx-auto"
-          style={{ transform: `translateY(${offset}px)`, transition: "transform 0.1s linear" }}
-        >
-          <div className="absolute -inset-8 rounded-[2.5rem] bg-gradient-to-br from-primary/20 via-transparent to-[hsl(var(--primary-glow))]/20 blur-2xl" aria-hidden />
+        <div className="relative max-w-2xl mx-auto">
           <div key={active} className="relative animate-fade-in shadow-premium rounded-2xl">
             {current.render()}
           </div>

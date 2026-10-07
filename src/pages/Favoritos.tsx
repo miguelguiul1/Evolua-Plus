@@ -17,8 +17,8 @@ const Favoritos = () => {
   const empty = items.length === 0 && foodFavs.length === 0;
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24 md:pb-16">
-      <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
+    <div className="min-h-dvh bg-background pt-20 pb-10 md:pb-16">
+      <div className="container mx-auto max-w-3xl">
         <header className="text-center mb-8">
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
             Meus <span className="text-primary">Favoritos</span>
@@ -45,7 +45,7 @@ const Favoritos = () => {
                 <h2 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
                   <Star className="w-4 h-4 text-accent" /> Alimentos salvos
                 </h2>
-                <div className="grid sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {foodFavs.map((f) => (
                     <div key={f.id} className="bg-card rounded-2xl border border-border/50 shadow-soft p-4 transition-all hover:border-primary/30">
                       <p className="font-display font-semibold text-sm text-foreground">

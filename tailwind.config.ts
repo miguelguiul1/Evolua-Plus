@@ -8,7 +8,8 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      // Margem lateral única: 20px no celular (var --gutter em index.css), 32px a partir do tablet.
+      padding: { DEFAULT: "var(--gutter)", md: "2rem" },
       screens: {
         "2xl": "1400px",
       },
