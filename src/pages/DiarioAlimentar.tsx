@@ -1,3 +1,5 @@
+import { Prato } from "@/components/feira/Formas";
+import CabecalhoPagina from "@/components/feira/CabecalhoPagina";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +11,6 @@ import {
   Plus, Trash2, Zap, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Sparkles,
   RefreshCw, Apple, Coffee, Sun, Moon, Cookie, Pencil, Search, Star, X, Camera, Bot, Download,
 } from "lucide-react";
-import MotivationalQuote from "@/components/MotivationalQuote";
 import WaterTracker from "@/components/WaterTracker";
 import FoodCalendar from "@/components/diario/FoodCalendar";
 import WeeklySummary from "@/components/diario/WeeklySummary";
@@ -253,10 +254,10 @@ const DiarioAlimentar = () => {
 
   const macroCards = [
     { label: "kcal", value: Math.round(totals.calories), cls: "text-foreground" },
-    { label: "prot", value: `${Math.round(totals.protein)}g`, cls: "text-primary" },
-    { label: "carb", value: `${Math.round(totals.carbs)}g`, cls: "text-accent" },
+    { label: "prot", value: `${Math.round(totals.protein)}g`, cls: "text-foreground" },
+    { label: "carb", value: `${Math.round(totals.carbs)}g`, cls: "text-foreground" },
     { label: "gord", value: `${Math.round(totals.fat)}g`, cls: "text-foreground" },
-    { label: "fibra", value: `${Math.round(totals.fiber)}g`, cls: "text-primary" },
+    { label: "fibra", value: `${Math.round(totals.fiber)}g`, cls: "text-foreground" },
   ];
 
   const exportDayPdf = async () => {
@@ -280,17 +281,7 @@ const DiarioAlimentar = () => {
   return (
     <div className="min-h-dvh bg-background pt-20 pb-10 md:pb-16">
       <div className="container mx-auto max-w-4xl">
-        <div className="text-center mb-8">
-          <span className="inline-block mb-3 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium">
-            📊 Acompanhamento diário
-          </span>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
-            Diário <span className="text-primary">Alimentar</span>
-          </h1>
-          <p className="mt-3 text-muted-foreground max-w-lg mx-auto text-sm">
-            Registre o que come e a IA analisa sua nutrição, compara com suas metas e sugere melhorias.
-          </p>
-        </div>
+        <CabecalhoPagina titulo="Diário" sobretitulo="Seu caderno" apoio="Anote o que comeu, do jeito que lembrar. A IA pode estimar os nutrientes para você." />
 
         {/* Atalhos */}
         <div className="flex flex-wrap justify-center gap-2 mb-6">
@@ -317,7 +308,7 @@ const DiarioAlimentar = () => {
 
           <div className="space-y-5">
             {/* Adicionar alimento */}
-            <div className="bg-card rounded-2xl shadow-soft p-5">
+            <div id="adicionar-alimento" className="bg-card rounded-2xl shadow-soft p-5 scroll-mt-24">
               <h2 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Plus className="w-5 h-5 text-primary" /> Adicionar alimento
               </h2>
@@ -419,10 +410,26 @@ const DiarioAlimentar = () => {
             {isLoading ? (
               <p className="text-sm text-muted-foreground text-center py-8">Carregando…</p>
             ) : entries.length === 0 ? (
-              <div className="bg-card rounded-2xl shadow-soft p-10 text-center">
-                <Apple className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                <p className="font-display font-semibold text-foreground mb-1">Nenhum alimento registrado</p>
-                <p className="text-sm text-muted-foreground">Comece adicionando o que você comeu neste dia.</p>
+              <div id="diario-vazio" className="anim-entrada rounded-2xl border border-border bg-card px-6 py-8 text-center">
+                <Prato className="mx-auto mb-4 h-20 w-20" />
+                <p className="font-display text-xl font-semibold text-foreground">
+                  {selectedDate === todayISO() ? "Seu caderno de hoje está em branco" : "Nada anotado neste dia"}
+                </p>
+                <p className="mx-auto mt-1.5 max-w-xs text-[15px] text-muted-foreground">
+                  {selectedDate === todayISO()
+                    ? "Anote o que comeu, do jeito que lembrar. Não precisa ser exato."
+                    : "Tudo bem. Dá pra anotar agora, se lembrar."}
+                </p>
+                <Button
+                  className="press mt-5"
+                  onClick={() => {
+                    const el = document.getElementById("adicionar-alimento");
+                    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    el?.querySelector<HTMLInputElement>("input")?.focus({ preventScroll: true });
+                  }}
+                >
+                  {selectedDate === todayISO() ? "Anotar uma refeição" : "Anotar neste dia"}
+                </Button>
               </div>
             ) : (
               MEAL_TYPES.map((m) => {
@@ -626,8 +633,6 @@ const DiarioAlimentar = () => {
                 )}
               </div>
             )}
-
-            <MotivationalQuote />
           </div>
         </div>
       </div>

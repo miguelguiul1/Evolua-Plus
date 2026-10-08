@@ -4,15 +4,14 @@ import BrandLogo from "@/components/BrandLogo";
 
 const SiteFooter = () => (
   <footer className="border-t border-border bg-secondary/40 relative overflow-hidden">
-    <div className="absolute inset-0 bg-mesh pointer-events-none opacity-60" aria-hidden />
-    <div className="container mx-auto py-16 grid grid-cols-1 gap-10 md:grid-cols-5 relative">
+        <div className="container mx-auto py-16 grid grid-cols-1 gap-10 md:grid-cols-5 relative">
       <div className="md:col-span-2">
         <Link to="/" className="inline-flex items-center gap-2" aria-label="Evolua Plus — página inicial">
           <BrandLogo size="md" />
         </Link>
         <p className="mt-4 text-sm text-muted-foreground max-w-sm leading-relaxed">
-          Seu nutricionista inteligente 24h. Planejamento alimentar personalizado por IA,
-          adaptado ao seu objetivo, restrições e rotina.
+          Cardápio da semana, lista de compras e diário alimentar, do jeito da sua cozinha.
+          Não substitui nutricionista ou médico.
         </p>
         <div className="mt-5 flex items-center gap-2">
           {[

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Heart, ThumbsDown, AlertTriangle, Target, Check, X } from "lucide-react";
-import MotivationalQuote from "@/components/MotivationalQuote";
 import { useAuth } from "@/contexts/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -180,8 +179,6 @@ const Preferencias = () => {
             Personalize suas preferências para receber sugestões sob medida
           </p>
         </div>
-
-        <MotivationalQuote />
 
         {loadError && (
           <div role="alert" className="mt-6 bg-destructive/10 border border-destructive/30 rounded-xl p-4 flex items-center justify-between gap-3">

@@ -1,8 +1,8 @@
+import CabecalhoPagina from "@/components/feira/CabecalhoPagina";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import CameraCapture from "@/components/CameraCapture";
 import { Camera, Upload, Zap, Apple, Flame, Lightbulb, RefreshCw } from "lucide-react";
-import MotivationalQuote from "@/components/MotivationalQuote";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/useAuth";
@@ -107,39 +107,12 @@ const Scanner = () => {
   return (
     <div className="min-h-dvh bg-background pt-20 pb-10 md:pb-16">
       <div className="container mx-auto max-w-3xl">
-        <div className="text-center mb-10">
-          <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium">
-            🔬 Função principal
-          </span>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
-            Scanner <span className="text-primary">Inteligente</span>
-          </h1>
-          <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
-            {tab === "alimento"
+        <CabecalhoPagina titulo="Foto do prato" sobretitulo="Scanner" apoio={
+tab === "alimento"
               ? "Fotografe um alimento, bebida ou produto e receba uma análise nutricional completa"
               : tab === "codigo"
               ? "Leia o código de barras do produto e registre os dados nutricionais no seu diário"
-              : "Tire uma foto da sua geladeira e a IA vai sugerir receitas práticas, saudáveis e econômicas"}
-          </p>
-          <div className="mt-6 flex w-full sm:inline-flex sm:w-auto p-1 rounded-full bg-secondary">
-            {([
-              ["alimento", "Alimento"],
-              ["codigo", "Código de barras"],
-              ["geladeira", "Geladeira"],
-              ["porcao", "Porção"],
-            ] as const).map(([id, label]) => (
-              <button
-                key={id}
-                onClick={() => setTab(id)}
-                className={`flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium leading-tight transition-colors ${
-                  tab === id ? "bg-card text-foreground shadow-soft" : "text-muted-foreground"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
+              : "Tire uma foto da sua geladeira e a IA vai sugerir receitas práticas, saudáveis e econômicas"} />
 
         {tab === "alimento" && <FoodScanner />}
 
@@ -331,7 +304,6 @@ const Scanner = () => {
         )}
 
         <div className="mt-10">
-          <MotivationalQuote />
         </div>
       </div>
     </div>

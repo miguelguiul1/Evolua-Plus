@@ -1,3 +1,4 @@
+import MarcadorIA from "@/components/feira/MarcadorIA";
 import { useState, useRef, useEffect, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,7 +46,7 @@ const objetivos = [
   { id: "alimentação equilibrada", label: "Equilíbrio" },
 ];
 
-const stages = ["Analisando alimento...", "Identificando nutrientes...", "Preparando sua análise..."];
+const stages = ["Olhando a foto…", "Separando os alimentos…", "Estimando as porções…"];
 
 const round = (n: number) => Math.round((n || 0) * 10) / 10;
 
@@ -348,24 +349,27 @@ const FoodScanner = () => {
             <img src={image} alt="Alimento escaneado" className="w-full max-h-72 object-cover" />
             {analyzing && (
               <>
-                <div className="absolute inset-0 bg-primary/10" />
-                <div className="absolute left-0 right-0 h-1 bg-primary/80 shadow-glow animate-[scanline_2s_ease-in-out_infinite]" />
+                <div className="absolute inset-0 bg-foreground/10" />
+                {/* Progresso: linha que percorre a foto só enquanto analisa (transform). */}
+                <div className="varredura absolute left-0 right-0 top-0 h-0.5 bg-background" style={{ animation: "feira-varredura 2.4s cubic-bezier(0.2,0,0,1) infinite", ["--h" as string]: "17rem" }} />
               </>
             )}
           </div>
           {analyzing ? (
             <div className="space-y-3">
-              <div className="flex items-center justify-center gap-2 text-primary font-medium">
-                <Sparkles className="w-4 h-4 animate-pulse" /> {stages[stage]}
+              <div className="flex items-center justify-center gap-2 font-semibold text-foreground" aria-live="polite">
+                <MarcadorIA /> {stages[stage]}
               </div>
-              <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: `${(stage + 1) * 33}%` }} />
-              </div>
+              <ol className="flex justify-center gap-2" aria-hidden="true">
+                {stages.map((_, i) => (
+                  <li key={i} className={`h-1.5 w-10 rounded-full transition-opacity duration-300 ${i <= stage ? "bg-foreground opacity-100" : "bg-foreground opacity-20"}`} />
+                ))}
+              </ol>
             </div>
           ) : (
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button variant="hero" size="lg" className="gap-2" onClick={analyze}>
-                <Sparkles className="w-5 h-5" /> Confirmar e analisar
+                Confirmar e analisar
               </Button>
               <Button variant="outline" size="lg" onClick={reset}>
                 Tirar nova foto
@@ -584,7 +588,7 @@ const FoodScanner = () => {
           {selected.analise_objetivo && (
             <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
               <p className="text-sm font-medium text-foreground mb-1 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" /> Para o seu objetivo
+                Para o seu objetivo <MarcadorIA />
               </p>
               <p className="text-sm text-muted-foreground">{selected.analise_objetivo}</p>
             </div>
