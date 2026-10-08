@@ -38,7 +38,8 @@ const FoodCalendar = ({ entries, selectedDate, onSelect, caloriesGoal }: Props) 
   }, [cursor]);
 
   const today = toISODate(new Date());
-  const monthLabel = cursor.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const monthLabelRaw = cursor.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const monthLabel = monthLabelRaw.charAt(0).toUpperCase() + monthLabelRaw.slice(1);
 
   const statusOf = (iso: string) => {
     const d = byDate[iso];
@@ -59,7 +60,7 @@ const FoodCalendar = ({ entries, selectedDate, onSelect, caloriesGoal }: Props) 
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
-        <p className="font-display font-semibold text-sm text-foreground capitalize">{monthLabel}</p>
+        <p className="font-display font-semibold text-sm text-foreground">{monthLabel}</p>
         <button
           onClick={() => shift(1)}
           aria-label="Próximo mês"
