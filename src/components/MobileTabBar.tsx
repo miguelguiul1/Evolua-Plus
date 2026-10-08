@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, ScanLine, NotebookPen, Sparkles, TrendingUp } from "lucide-react";
+import { LayoutDashboard, ScanLine, NotebookPen, MessageCircle, TrendingUp } from "lucide-react";
 import { useAuth } from "@/contexts/useAuth";
 import { useConsent } from "@/hooks/useConsent";
 import { useSetupStatus } from "@/hooks/useOnboarding";
@@ -9,7 +9,7 @@ const tabs = [
   { to: "/dashboard", label: "Painel", icon: LayoutDashboard },
   { to: "/diario", label: "Diário", icon: NotebookPen },
   { to: "/scanner", label: "Scanner", icon: ScanLine },
-  { to: "/assistente", label: "IA", icon: Sparkles },
+  { to: "/assistente", label: "Assistente", icon: MessageCircle },
   { to: "/evolucao", label: "Evolução", icon: TrendingUp },
 ];
 

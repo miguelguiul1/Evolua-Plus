@@ -1,3 +1,4 @@
+import CabecalhoPagina from "@/components/feira/CabecalhoPagina";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar, Lightbulb, RefreshCw, ChevronDown, ChevronUp, FileDown, Plus, Shuffle, AlertTriangle, Target, Sparkles, Dumbbell, Droplets, ShieldCheck, ThumbsDown, Check } from "lucide-react";
@@ -6,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
-import MotivationalQuote from "@/components/MotivationalQuote";
 import SmartShoppingList from "@/components/plano/SmartShoppingList";
 import { exportPdfCompat } from "@/lib/pdfExport";
 import { todayISO, useGoals, usePreferences, useSyncModules } from "@/hooks/useNutrition";
@@ -392,17 +392,7 @@ const PlanoSemanal = () => {
   return (
     <div className="min-h-dvh bg-background pt-20 pb-10 md:pb-16">
       <div className="container mx-auto max-w-3xl">
-        <div className="text-center mb-10">
-          <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-display text-sm font-medium">
-            📅 Planejamento inteligente
-          </span>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
-            Plano <span className="text-primary">Semanal</span>
-          </h1>
-          <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
-            A IA gera um plano completo de refeições personalizado com o seu perfil, metas e preferências
-          </p>
-        </div>
+        <CabecalhoPagina titulo="Cardápio da semana" sobretitulo="Plano" apoio="Sete dias de refeições pensados para a sua rotina, com a lista de compras pronta." />
 
         {/* Erro da geração — estado na interface, não apenas toast */}
         {error && !generating && <div className="mb-6">{ErroCard}</div>}
@@ -501,11 +491,11 @@ const PlanoSemanal = () => {
                   <p className="text-xs text-muted-foreground">kcal/dia</p>
                 </div>
                 <div className="bg-secondary/50 rounded-xl p-3">
-                  <p className="font-display font-bold text-primary">{plano.resumo.proteina_media}g</p>
+                  <p className="font-display font-bold text-foreground">{plano.resumo.proteina_media}g</p>
                   <p className="text-xs text-muted-foreground">prot/dia</p>
                 </div>
                 <div className="bg-secondary/50 rounded-xl p-3">
-                  <p className="font-display font-bold text-accent">{plano.resumo.carb_media}g</p>
+                  <p className="font-display font-bold text-foreground">{plano.resumo.carb_media}g</p>
                   <p className="text-xs text-muted-foreground">carb/dia</p>
                 </div>
                 <div className="bg-secondary/50 rounded-xl p-3">
@@ -572,7 +562,7 @@ const PlanoSemanal = () => {
                               <p className="font-display font-semibold text-foreground text-sm">{ref.nome}</p>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-xs text-primary font-semibold">{ref.calorias} kcal</span>
+                              <span className="text-xs text-muted-foreground">{ref.calorias} kcal</span>
                               {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                             </div>
                           </button>
@@ -781,7 +771,6 @@ const PlanoSemanal = () => {
         )}
 
         <div className="mt-10">
-          <MotivationalQuote />
         </div>
       </div>
     </div>

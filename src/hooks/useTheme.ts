@@ -10,7 +10,7 @@ const systemDark = () => window.matchMedia("(prefers-color-scheme: dark)").match
 const syncNativeStatusBar = (dark: boolean) => {
   if (!Capacitor.isNativePlatform()) return;
   StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light }).catch(() => {});
-  StatusBar.setBackgroundColor({ color: dark ? "#111B16" : "#F7F9F7" }).catch(() => {});
+  StatusBar.setBackgroundColor({ color: dark ? "#1C1714" : "#F5EFE4" }).catch(() => {});
 };
 
 export const applyTheme = (mode: ThemeMode) => {

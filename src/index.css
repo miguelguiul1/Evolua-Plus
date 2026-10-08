@@ -1,26 +1,20 @@
 /* Fontes self-hosted (woff2, subconjunto latino com acentos do português, peso 400–700).
-   Antes vinham por @import do Google Fonts, que bloqueava a renderização e dependia de rede externa.
+   Fraunces (títulos) instanciada com opsz 72, SOFT 50 e WONK 0 — serifa de livro de receita, sem as letras "tortas".
+   Atkinson Hyperlegible Next (texto) — legibilidade para baixa visão (Braille Institute).
    Licença: SIL Open Font License 1.1 (public/fonts/LICENSE-*.txt). */
 @font-face {
-  font-family: 'DM Sans';
+  font-family: 'Fraunces';
   font-style: normal;
   font-weight: 400 700;
   font-display: swap;
-  src: url('/fonts/dm-sans-latin-400-700.woff2') format('woff2');
+  src: url('/fonts/fraunces-latin-400-700.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'DM Sans';
-  font-style: italic;
-  font-weight: 400 700;
-  font-display: swap;
-  src: url('/fonts/dm-sans-latin-400-700-italic.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Space Grotesk';
+  font-family: 'Atkinson Hyperlegible Next';
   font-style: normal;
   font-weight: 400 700;
   font-display: swap;
-  src: url('/fonts/space-grotesk-latin-400-700.woff2') format('woff2');
+  src: url('/fonts/atkinson-next-latin-400-700.woff2') format('woff2');
 }
 
 @tailwind base;
@@ -251,8 +245,8 @@
     --z-tooltip: 100;
 
     /* ---------- TIPOGRAFIA --------------------------------------- */
-    --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-    --font-body: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Fraunces', ui-serif, Georgia, serif;
+    --font-body: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif;
     color-scheme: light;
   }
 
@@ -586,3 +580,190 @@
   50% { top: 96%; }
   100% { top: 0%; }
 }
+
+/* =====================================================================
+   FEIRA — tokens da direção visual (docs/DIRECAO_VISUAL.md, seção 0).
+   Papel, tinta, tomate (ação), folha (concluído), mostarda (só detalhe),
+   beterraba (erro, sempre com ícone e texto). Claro e escuro em AA.
+   ===================================================================== */
+@layer base {
+  :root {
+    --papel: 39 46% 93%;          /* #F5EFE4 */
+    --cartao: 40 53% 97%;         /* #FBF8F2 */
+    --tinta: 22 13% 12%;          /* #221D1A */
+    --tinta-suave: 27 11% 38%;    /* #6B5F55 */
+    --tomate: 10 68% 42%;         /* #B23A22 */
+    --folha: 89 39% 30%;          /* #4E6B2F */
+    --mostarda: 41 65% 48%;       /* #C9962B — nunca como texto no claro */
+    --beterraba: 341 66% 33%;     /* #8C1D40 */
+    --borda-campo: 31 11% 51%;    /* #8F8274 */
+    --borda-suave: 37 32% 84%;    /* #E3D9C9 */
+
+    --background: var(--papel);
+    --foreground: var(--tinta);
+    --surface: 38 40% 90%;
+    --surface-foreground: var(--tinta);
+    --card: var(--cartao);
+    --card-foreground: var(--tinta);
+    --popover: var(--cartao);
+    --popover-foreground: var(--tinta);
+
+    --primary: var(--tomate);
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 10 68% 50%;
+    --primary-soft: 12 60% 92%;
+    --primary-700: 10 70% 34%;
+    --primary-600: var(--tomate);
+    --primary-300: 12 55% 70%;
+
+    --secondary: 38 40% 88%;      /* #EDE4D5 */
+    --secondary-foreground: var(--tinta);
+    --muted: 38 40% 88%;
+    --muted-foreground: var(--tinta-suave);
+
+    --accent: var(--mostarda);
+    --accent-foreground: var(--tinta);
+    --accent-soft: 42 70% 88%;
+    --accent-600: 40 66% 42%;
+    --accent-700: 36 62% 30%;
+
+    --destructive: var(--beterraba);
+    --destructive-foreground: 0 0% 100%;
+    --error-600: 341 66% 27%;
+    --success: var(--folha);
+    --success-foreground: 0 0% 100%;
+    --success-600: 89 40% 24%;
+    --warning: var(--mostarda);
+    --warning-foreground: var(--tinta);
+    --info: var(--tinta-suave);
+    --info-foreground: 0 0% 100%;
+
+    --border: var(--borda-suave);
+    --input: var(--borda-campo);
+    --ring: var(--tomate);
+
+    --chart-1: var(--tinta);
+    --chart-2: var(--tomate);
+    --chart-3: var(--folha);
+    --chart-4: var(--mostarda);
+    --chart-5: var(--tinta-suave);
+    --chart-grid: var(--borda-suave);
+
+    --sidebar-background: var(--cartao);
+    --sidebar-foreground: var(--tinta);
+    --sidebar-primary: var(--tomate);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 38 40% 88%;
+    --sidebar-accent-foreground: var(--tinta);
+    --sidebar-border: var(--borda-suave);
+    --sidebar-ring: var(--tomate);
+
+    /* Sem degradês: "hero" vira cor chapada de tinta. */
+    --gradient-hero: linear-gradient(hsl(var(--tinta)), hsl(var(--tinta)));
+    --gradient-primary: linear-gradient(hsl(var(--tomate)), hsl(var(--tomate)));
+    --gradient-accent: linear-gradient(hsl(var(--mostarda)), hsl(var(--mostarda)));
+    --gradient-surface: linear-gradient(hsl(var(--cartao)), hsl(var(--cartao)));
+
+    /* Sombras de papel: curtas e quentes. Sem brilho. */
+    --shadow-xs: 0 1px 0 hsl(22 30% 20% / 0.06);
+    --shadow-sm: 0 1px 0 hsl(22 30% 20% / 0.08), 0 1px 3px hsl(22 30% 20% / 0.05);
+    --shadow-md: 0 1px 0 hsl(22 30% 20% / 0.08), 0 4px 12px -6px hsl(22 30% 20% / 0.12);
+    --shadow-lg: 0 2px 0 hsl(22 30% 20% / 0.08), 0 12px 24px -12px hsl(22 30% 20% / 0.18);
+    --shadow-floating: 0 2px 0 hsl(22 30% 20% / 0.10), 0 10px 24px -14px hsl(22 30% 20% / 0.30);
+    --shadow-glow: var(--shadow-md);
+    --shadow-glow-accent: var(--shadow-md);
+
+    --radius: 0.75rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+
+    /* Motion (seção 3): duração proporcional ao tamanho do movimento. */
+    --dur-toque: 100ms;
+    --dur-curta: 180ms;
+    --dur-media: 280ms;
+    --dur-longa: 450ms;
+    --ease-padrao: cubic-bezier(0.2, 0, 0, 1);
+    --ease-entrada: cubic-bezier(0.05, 0.7, 0.1, 1);
+    --ease-saida: cubic-bezier(0.3, 0, 0.8, 0.15);
+    --ease-out: var(--ease-padrao);
+    --ease-spring: var(--ease-padrao);
+  }
+
+  .dark {
+    --papel: 22 17% 9%;           /* #1C1714 — marrom-tinta, não preto */
+    --cartao: 24 15% 13%;         /* #26201C */
+    --tinta: 37 42% 89%;          /* #EFE6D8 */
+    --tinta-suave: 32 16% 64%;    /* #B3A595 */
+    --tomate: 11 70% 59%;         /* #E0694F */
+    --folha: 85 35% 59%;          /* #9DBB72 */
+    --mostarda: 41 64% 58%;       /* #D9AE4F */
+    --beterraba: 338 77% 74%;     /* #F08AB0 */
+    --borda-campo: 30 12% 43%;    /* #7A6D60 */
+    --borda-suave: 26 14% 20%;    /* #3A322C */
+
+    --surface: 26 17% 16%;
+    --secondary: 26 17% 16%;
+    --muted: 26 17% 16%;
+    --primary-foreground: 22 17% 9%;   /* texto escuro sobre tomate claro: 5,3:1 */
+    --primary-soft: 12 30% 20%;
+    --primary-700: 11 70% 66%;
+    --primary-glow: 11 70% 64%;
+    --accent-foreground: 22 17% 9%;
+    --accent-soft: 38 30% 20%;
+    --accent-600: 41 64% 50%;
+    --destructive-foreground: 22 17% 9%;
+    --error-600: 338 77% 80%;
+    --success-foreground: 22 17% 9%;
+    --success-600: 85 35% 66%;
+    --warning-foreground: 22 17% 9%;
+    --info-foreground: 22 17% 9%;
+    --sidebar-primary-foreground: 22 17% 9%;
+    --sidebar-accent: 26 17% 16%;
+
+    --shadow-xs: 0 1px 0 hsl(0 0% 0% / 0.3);
+    --shadow-sm: 0 1px 0 hsl(0 0% 0% / 0.35);
+    --shadow-md: 0 1px 0 hsl(0 0% 0% / 0.35), 0 6px 14px -8px hsl(0 0% 0% / 0.5);
+    --shadow-lg: 0 2px 0 hsl(0 0% 0% / 0.35), 0 14px 28px -12px hsl(0 0% 0% / 0.55);
+    --shadow-floating: 0 2px 0 hsl(0 0% 0% / 0.4), 0 12px 26px -14px hsl(0 0% 0% / 0.6);
+  }
+
+  /* Textura de papel: ruído SVG em linha, bem leve; some no escuro. */
+  body {
+    background-color: hsl(var(--background));
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .13 0 0 0 0 .11 0 0 0 0 .1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .dark body { background-image: none; }
+
+  h1, h2, h3 { font-variation-settings: normal; letter-spacing: -0.01em; }
+}
+
+/* Motion: tudo que se mexe tem função; em modo reduzido vira fade ou fica parado. */
+@layer utilities {
+  .anim-entrada { animation: feira-entrada var(--dur-media) var(--ease-entrada) both; }
+  .anim-carimbo { animation: feira-carimbo var(--dur-media) var(--ease-padrao) both; }
+  .press { transition: transform var(--dur-toque) var(--ease-padrao); }
+  .press:active { transform: scale(0.97); }
+  .barra-progresso { transform-origin: left center; transition: transform var(--dur-longa) var(--ease-padrao); }
+}
+@keyframes feira-entrada { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes feira-carimbo { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: none; } }
+@keyframes feira-deriva {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50%  { transform: translate3d(var(--dx, 10px), var(--dy, -12px), 0) rotate(var(--rot, 4deg)); }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+}
+@keyframes feira-varredura { 0% { transform: translateY(0); } 50% { transform: translateY(var(--h, 200px)); } 100% { transform: translateY(0); } }
+@keyframes feira-pontos { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-entrada, .anim-carimbo { animation: feira-fade var(--dur-curta) linear both; }
+  .press:active { transform: none; }
+  .barra-progresso { transition: none; }
+  .forma-feira, .varredura { animation: none !important; }
+  .animate-pulse, .animate-fade-in, .animate-fade-up, .animate-float, .animate-float-slow, .animate-scale-in { animation: none !important; }
+}
+@keyframes feira-fade { from { opacity: 0; } to { opacity: 1; } }
+.fundo-feira[data-pausado] .forma-feira { animation-play-state: paused !important; }
+.forma-feira { will-change: transform; }
+/* Mostarda nunca vira texto no claro (2,3:1): onde o código pede text-accent, usa o tom escuro (≈6:1). */
+:root:not(.dark) .text-accent { color: hsl(36 62% 28%); }

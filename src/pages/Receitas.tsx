@@ -1,8 +1,8 @@
+import CabecalhoPagina from "@/components/feira/CabecalhoPagina";
 import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Clock, DollarSign, Flame, Search, Heart, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
-import MotivationalQuote from "@/components/MotivationalQuote";
 import { useGlobalFavorites } from "@/hooks/useGlobalFavorites";
 
 import { Receita, receitas, allTags, tagLabels } from "@/data/receitas";
@@ -74,16 +74,7 @@ const Receitas = () => {
   return (
     <div className="min-h-dvh bg-background pt-20 pb-10 md:pb-16">
       <div className="container mx-auto max-w-3xl">
-        <div className="text-center mb-10">
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
-            Pratos <span className="text-primary">Baratos</span> & Rápidos
-          </h1>
-          <p className="mt-3 text-muted-foreground">
-            Receitas nutritivas, econômicas e prontas em até 15 minutos
-          </p>
-        </div>
-
-        <MotivationalQuote />
+        <CabecalhoPagina titulo="Receitas" sobretitulo="Pratos simples" apoio="Pratos de mercado, prontos em pouco tempo." />
 
         {/* Search */}
         <div className="mt-8 relative">
@@ -191,15 +182,12 @@ const Receitas = () => {
                     aria-controls={`receita-detalhe-${r.id}`}
                     className="flex-1 min-w-0 text-left"
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <h3 className="font-display font-semibold text-foreground">
-                        {r.nome}
-                      </h3>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
-                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{r.tempo}</span>
-                        <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" />{r.custo}</span>
-                        <span className="flex items-center gap-1"><Flame className="w-3 h-3" />{r.calorias}cal</span>
-                      </div>
+                    <h3 className="font-display text-lg leading-snug font-semibold text-foreground">
+                      {r.nome}
+                    </h3>
+                    <div className="mt-1 flex items-center gap-4 text-[13px] text-muted-foreground">
+                      <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{r.tempo}</span>
+                      <span className="flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" />{r.custo}</span>
                     </div>
                     <div className="flex gap-2 mt-2">
                       {r.tags.map((t) => (
@@ -229,11 +217,11 @@ const Receitas = () => {
                       <p className="text-xs text-muted-foreground">kcal</p>
                     </div>
                     <div className="bg-secondary/50 rounded-lg p-2">
-                      <p className="font-display font-bold text-primary text-sm">{r.proteina}g</p>
+                      <p className="font-display font-bold text-foreground text-sm">{r.proteina}g</p>
                       <p className="text-xs text-muted-foreground">prot</p>
                     </div>
                     <div className="bg-secondary/50 rounded-lg p-2">
-                      <p className="font-display font-bold text-accent text-sm">{r.carb}g</p>
+                      <p className="font-display font-bold text-foreground text-sm">{r.carb}g</p>
                       <p className="text-xs text-muted-foreground">carb</p>
                     </div>
                     <div className="bg-secondary/50 rounded-lg p-2">

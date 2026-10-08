@@ -1,23 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  Flame, Beef, Wheat, Droplets, Target, TrendingUp, BookOpen, Camera,
-  Utensils, Bot, Clock, CalendarClock, Lightbulb, Scale, BarChart3,
-  CalendarDays, Sparkles,
-} from "lucide-react";
+import { ArrowRight, Check, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/useAuth";
 import { Button } from "@/components/ui/button";
-import WaterTracker from "@/components/WaterTracker";
-import MotivationalQuote from "@/components/MotivationalQuote";
-import { MEAL_TYPES, mealLabel, sumTotals, todayISO, useFoodLog, useGoals, useWater } from "@/hooks/useNutrition";
+import { MEAL_TYPES, todayISO, useFoodLog, useGoals, useWater } from "@/hooks/useNutrition";
 import { useEngagement } from "@/hooks/useEngagement";
 import { useAchievementToasts } from "@/hooks/useAchievementToasts";
-import ScoreCard from "@/components/engajamento/ScoreCard";
-import StreakCard from "@/components/engajamento/StreakCard";
-import WeekSummaryCards from "@/components/dashboard/WeekSummaryCards";
 import AiInsightCard from "@/components/dashboard/AiInsightCard";
-import EmptyState from "@/components/ds/EmptyState";
 import { PageSkeleton } from "@/components/ds/Skeletons";
 import { loadStoredPlano } from "@/lib/planoStorage";
 
@@ -46,15 +36,7 @@ const Dashboard = () => {
       .then(({ data }) => { if (data?.full_name) setName(data.full_name.split(" ")[0]); });
   }, [user]);
 
-  const totals = sumTotals(entries);
-  const calGoal = goals?.calories_goal ?? 2000;
-  const protGoal = goals?.protein_goal ?? 100;
   const waterGoal = goals?.water_goal_ml ?? 2500;
-  // Distribuição de referência: 50% carbo, 25% gordura das calorias-meta
-  const carbGoal = Math.round((calGoal * 0.5) / 4);
-  const fatGoal = Math.round((calGoal * 0.25) / 9);
-
-  const lastMeal = entries.length ? entries[entries.length - 1] : null;
 
   const nextMeal = useMemo(() => {
     const hour = new Date().getHours();
@@ -73,246 +55,120 @@ const Dashboard = () => {
     return "Boa noite";
   };
 
-  const pct = (v: number, g: number) => Math.min(100, Math.round((v / (g || 1)) * 100));
+  // Contagens para a linha "Hoje" e a "Sua semana" — só leitura de dados que a página já recebe.
+  const mealSlots = MEAL_TYPES.filter((m) => m.id !== "outro");
+  const loggedMealIds = new Set(entries.map((e) => e.meal_type));
+  const mealsDone = mealSlots.filter((m) => loggedMealIds.has(m.id)).length;
+  const cups = Math.floor(waterMl / 250);
+  const cupsGoal = Math.max(1, Math.round(waterGoal / 250));
+  const weekDays = engagement.week;
+  const daysLogged = weekDays.filter((d) => d.logged > 0).length;
 
-  const macros = [
-    { label: "Calorias", icon: Flame, value: Math.round(totals.calories), goal: calGoal, unit: "kcal", ring: "bg-primary", tint: "bg-primary/10 text-primary" },
-    { label: "Proteína", icon: Beef, value: Math.round(totals.protein), goal: protGoal, unit: "g", ring: "bg-primary", tint: "bg-primary/10 text-primary" },
-    { label: "Carboidratos", icon: Wheat, value: Math.round(totals.carbs), goal: carbGoal, unit: "g", ring: "bg-accent", tint: "bg-accent/10 text-accent" },
-    { label: "Gorduras", icon: Droplets, value: Math.round(totals.fat), goal: fatGoal, unit: "g", ring: "bg-primary/60", tint: "bg-secondary text-foreground" },
-  ];
-
-  const shortcuts = [
-    { to: "/scanner", label: "Scanner", icon: Camera },
-    { to: "/diario", label: "Diário", icon: Utensils },
-    { to: "/insights", label: "Insights", icon: BarChart3 },
-    { to: "/assistente", label: "IA", icon: Bot },
-  ];
-
-  const lastWeight = engagement.weights.length ? engagement.weights[engagement.weights.length - 1] : null;
-  const insightOfDay =
-    engagement.proactive[0] ??
-    (protGoal > 0 && totals.protein > 0
-      ? `Hoje você já consumiu ${pct(totals.protein, protGoal)}% da sua meta de proteínas.`
-      : "Registre sua primeira refeição para receber insights personalizados.");
-
-  // Usuário sem nenhum dado real ainda → empty state contextual em vez de parede de zeros.
-  const hasAnyData =
-    entries.length > 0 || waterMl > 0 || engagement.week.some((d) => d.logged > 0) || engagement.weights.length > 0;
-  const isEmptyState = !hasAnyData;
+  // "Agora": um único próximo passo, escolhido pelo estado que já existe.
+  const agora = !hasPlan
+    ? { titulo: "Monte o cardápio da semana.", apoio: "Usamos o que você já contou no perfil. Leva poucos minutos.", acao: "Montar cardápio", to: "/plano-semanal" }
+    : nextMeal
+      ? { titulo: `Anote o ${nextMeal.label.toLowerCase()}.`, apoio: `Por volta das ${nextMeal.hour}h. Do jeito que lembrar, sem precisar ser exato.`, acao: `Anotar ${nextMeal.short.toLowerCase()}`, to: "/diario" }
+      : { titulo: "Dia anotado.", apoio: "Que tal dar uma olhada no cardápio de amanhã?", acao: "Ver cardápio", to: "/plano-semanal" };
 
   if (engagement.loading) return <PageSkeleton />;
 
   return (
-    <div className="min-h-dvh bg-background pt-20 pb-10 md:pb-16">
-      <div className="container mx-auto max-w-5xl">
-        <header className="mb-6">
-          <p className="text-sm text-muted-foreground">{greeting()},</p>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
-            {name || "Bem-vindo"} <span className="text-primary">👋</span>
+    <div className="min-h-dvh pt-20 pb-10 md:pb-16">
+      <div className="container mx-auto max-w-2xl">
+        <header className="mb-5 anim-entrada">
+          <h1 className="font-display text-[2rem] leading-tight font-semibold text-foreground">
+            {greeting()}{name ? `, ${name}` : ""}.
           </h1>
-          <p className="mt-2 text-muted-foreground text-sm">Aqui está o resumo do seu dia.</p>
         </header>
 
-        {/* Ação principal — hierarquia clara conforme o momento do usuário */}
-        {hasPlan ? (
-          <section className="bg-gradient-to-br from-primary/15 via-card to-accent/10 rounded-2xl border border-primary/25 shadow-soft p-6 sm:p-8 mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-              <span className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0">
-                <CalendarDays className="w-6 h-6" />
-              </span>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground">
-                  O que você vai comer hoje?
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Seu plano semanal está pronto e esperando por você.
-                </p>
-              </div>
-              <Button asChild variant="hero" size="lg" className="shrink-0 w-full sm:w-auto">
-                <Link to="/plano-semanal">Ver meu plano de hoje</Link>
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground mt-4">
-              Quer um plano ainda mais preciso?{" "}
-              <Link to="/plano-personalizado" className="text-primary font-medium hover:underline">
-                Conte sua rotina pra IA
+        {/* AGORA — o único destaque da tela */}
+        <section aria-labelledby="agora" className="anim-entrada rounded-2xl border-2 border-foreground bg-card p-5 shadow-floating">
+          <p id="agora" className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Agora</p>
+          <h2 className="mt-2 font-display text-2xl leading-snug font-semibold text-foreground">{agora.titulo}</h2>
+          <p className="mt-1.5 text-[15px] text-muted-foreground">{agora.apoio}</p>
+          <Button asChild size="lg" className="press mt-5 w-full">
+            <Link to={agora.to}>{agora.acao} <ArrowRight /></Link>
+          </Button>
+        </section>
+
+        {/* HOJE — três sinais compactos, sem cards */}
+        <section aria-labelledby="hoje" className="mt-8">
+          <h2 id="hoje" className="font-display text-xl font-semibold text-foreground">Hoje</h2>
+          <ul className="mt-3 divide-y divide-border border-y border-border">
+            <li>
+              <Link to="/diario" className="flex items-center justify-between gap-3 py-3.5">
+                <span className="text-[15px] text-foreground">Refeições anotadas</span>
+                <span className="flex items-center gap-2 text-[15px] font-semibold text-foreground">{mealsDone} de {mealSlots.length}<ChevronRight className="h-4 w-4 text-muted-foreground" /></span>
               </Link>
-            </p>
-          </section>
-        ) : (
-          <section className="bg-gradient-to-br from-primary/15 via-card to-accent/10 rounded-2xl border border-primary/25 shadow-soft p-6 sm:p-8 mb-6">
-            <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1.5">Seu próximo passo</p>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-              <span className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0">
-                <Sparkles className="w-6 h-6" />
-              </span>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground leading-snug">
-                  Seu perfil está configurado. Agora monte seu primeiro plano alimentar.
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Leva menos de um minuto — usamos tudo o que você já respondeu.
-                </p>
-              </div>
-              <Button asChild variant="hero" size="lg" className="shrink-0 w-full sm:w-auto">
-                <Link to="/plano-semanal">Montar meu plano</Link>
-              </Button>
-            </div>
-          </section>
-        )}
+            </li>
+            <li>
+              <Link to="/diario" className="block py-3.5">
+                <span className="flex items-center justify-between gap-3">
+                  <span className="text-[15px] text-foreground">Água</span>
+                  <span className="flex items-center gap-2 text-[15px] font-semibold text-foreground">{cups} de {cupsGoal} copos<ChevronRight className="h-4 w-4 text-muted-foreground" /></span>
+                </span>
+                <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-secondary" aria-hidden="true">
+                  <span className="barra-progresso block h-full w-full rounded-full bg-foreground" style={{ transform: `scaleX(${Math.min(1, cups / cupsGoal)})` }} />
+                </span>
+              </Link>
+            </li>
+            <li>
+              <Link to="/plano-semanal" className="flex items-center justify-between gap-3 py-3.5">
+                <span className="text-[15px] text-foreground">Cardápio de hoje</span>
+                <span className="flex items-center gap-2 text-[15px] font-semibold text-foreground">{hasPlan ? "Ver" : "Ainda não montado"}<ChevronRight className="h-4 w-4 text-muted-foreground" /></span>
+              </Link>
+            </li>
+          </ul>
+        </section>
+
+        {/* SUA SEMANA — dias com anotação; nada zera */}
+        <section aria-labelledby="semana" className="mt-8">
+          <div className="flex items-baseline justify-between">
+            <h2 id="semana" className="font-display text-xl font-semibold text-foreground">Sua semana</h2>
+            <Link to="/insights" className="tap-link text-sm font-semibold text-primary">Ver resumo</Link>
+          </div>
+          <p className="mt-1 text-[15px] text-muted-foreground">{daysLogged} de 7 dias com anotação.</p>
+          <ol className="mt-4 grid grid-cols-7 gap-1.5">
+            {weekDays.map((d) => {
+              const ok = d.logged > 0;
+              return (
+                <li key={d.date} className="flex flex-col items-center gap-1.5">
+                  <span
+                    className={`flex h-10 w-10 items-center justify-center rounded-full border-2 ${ok ? "border-foreground bg-foreground text-background" : "border-input text-transparent"}`}
+                    aria-label={`${d.label}: ${ok ? "com anotação" : "sem anotação"}`}
+                  >
+                    {ok && <Check className="h-4 w-4" strokeWidth={3} aria-hidden="true" />}
+                  </span>
+                  <span className="text-xs capitalize text-muted-foreground">{d.label}</span>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+
+        {/* Dica da IA — segundo plano, só quando houver */}
+        <div className="mt-8">
+          <AiInsightCard />
+        </div>
 
         {/* Atalhos */}
-        <div className="grid grid-cols-4 gap-2 sm:gap-3 mb-6">
-          {shortcuts.map(({ to, label, icon: Icon }) => (
-            <Link
-              key={to}
-              to={to}
-              className="bg-card rounded-xl border border-border/50 p-3 sm:p-4 flex flex-col items-center gap-2 hover:shadow-soft hover:border-primary/30 transition-all group"
-            >
-              <span className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Icon className="w-5 h-5" />
-              </span>
-              <span className="font-display font-semibold text-xs sm:text-sm text-foreground">{label}</span>
-            </Link>
-          ))}
-        </div>
-
-        {/* Sem dados reais ainda: acolhimento + próximo passo, sem parede de zeros */}
-        {isEmptyState ? (
-          <div className="mb-8">
-            <EmptyState
-              icon={CalendarDays}
-              title="Vamos começar sua evolução."
-              description={
-                hasPlan
-                  ? "Seu plano está pronto. Registre sua alimentação para começar a acompanhar seu progresso."
-                  : "Seu perfil está pronto. Monte seu primeiro plano e registre sua alimentação para começar a acompanhar seu progresso."
-              }
-              actionLabel={hasPlan ? "Ver meu plano de hoje" : "Montar meu primeiro plano"}
-              actionTo="/plano-semanal"
-            />
-          </div>
-        ) : (
-          <>
-            {/* Score e sequência */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-              <ScoreCard score={engagement.today.score} message={engagement.today.message} compact />
-              <div className="space-y-4">
-                <StreakCard current={engagement.streak.current} best={engagement.streak.best} />
-                <AiInsightCard />
-              </div>
-            </div>
-
-            {/* Macros do dia */}
-            <WeekSummaryCards />
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
-              {macros.map((m) => (
-                <div key={m.label} className="bg-card rounded-2xl shadow-soft border border-border/50 p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className={`w-9 h-9 rounded-lg flex items-center justify-center ${m.tint}`}>
-                      <m.icon className="w-4 h-4" />
-                    </span>
-                    <span className="font-display text-xl font-bold text-foreground">{pct(m.value, m.goal)}%</span>
-                  </div>
-                  <p className="font-display font-semibold text-sm text-foreground">{m.label}</p>
-                  <p className="text-xs text-muted-foreground mb-2">{m.value} / {m.goal} {m.unit}</p>
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                    <div className={`h-full ${m.ring} rounded-full transition-all duration-500`} style={{ width: `${pct(m.value, m.goal)}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-              <WaterTracker compact />
-
-              {/* Refeições */}
-              <div className="bg-card rounded-2xl shadow-soft border border-border/50 p-5 space-y-4">
-                <div className="flex items-start gap-3">
-                  <span className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <Clock className="w-4 h-4" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="font-display font-semibold text-sm text-foreground">Última refeição</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {lastMeal
-                        ? `${lastMeal.food_name} · ${mealLabel(lastMeal.meal_type)} · ${Math.round(Number(lastMeal.calories))} kcal`
-                        : "Nenhuma refeição registrada hoje."}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <span className="w-9 h-9 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0">
-                    <CalendarClock className="w-4 h-4" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="font-display font-semibold text-sm text-foreground">Próxima refeição planejada</p>
-                    <p className="text-xs text-muted-foreground">
-                      {nextMeal ? `${nextMeal.label} · por volta das ${nextMeal.hour}h` : "Todas as refeições do dia já foram registradas 🎉"}
-                    </p>
-                  </div>
-                </div>
-                <Link to="/diario" className="block text-sm font-medium text-primary hover:underline">
-                  Abrir diário alimentar
+        <nav aria-label="Atalhos" className="mt-8">
+          <ul className="divide-y divide-border border-y border-border">
+            {[
+              { to: "/receitas", label: "Receitas" },
+              { to: "/plano-semanal", label: "Lista de compras" },
+              { to: "/evolucao", label: "Evolução" },
+              { to: "/preferencias", label: "Meu perfil" },
+            ].map((s) => (
+              <li key={s.label}>
+                <Link to={s.to} className="flex items-center justify-between py-3.5 text-[15px] text-foreground">
+                  {s.label}<ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Link>
-                <div className="flex items-start gap-3 border-t border-border/60 pt-4">
-                  <span className="w-9 h-9 rounded-lg bg-secondary text-foreground flex items-center justify-center shrink-0">
-                    <Scale className="w-4 h-4" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="font-display font-semibold text-sm text-foreground">Último registro de evolução</p>
-                    <p className="text-xs text-muted-foreground">
-                      {lastWeight
-                        ? `${Number(lastWeight.weight_kg)} kg em ${new Date(String(lastWeight.logged_at)).toLocaleDateString("pt-BR")}`
-                        : "Nenhum registro de evolução ainda."}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Metas */}
-            <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl border border-primary/20 p-5 mb-8 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <Target className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-display font-semibold text-foreground">Metas diárias</h3>
-                  <p className="text-xs text-muted-foreground">
-                    {calGoal} kcal · {protGoal}g proteína · {(waterGoal / 1000).toFixed(1)}L água
-                    {" "}· hoje: {(waterMl / 1000).toFixed(2)}L bebidos
-                  </p>
-                </div>
-              </div>
-              <Link to="/preferencias" className="tap-link text-sm font-medium text-primary hover:underline">Ajustar</Link>
-            </div>
-          </>
-        )}
-
-        <MotivationalQuote />
-
-        <h2 className="font-display text-xl font-semibold text-foreground mt-8 mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-primary" /> Continue evoluindo
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { to: "/evolucao", label: "Evolução" },
-            { to: "/receitas", label: "Receitas" },
-            { to: "/biblioteca", label: "Biblioteca" },
-            { to: "/preferencias", label: "Meu perfil" },
-          ].map((s) => (
-            <Link
-              key={s.to}
-              to={s.to}
-              className="bg-card rounded-xl border border-border/50 p-4 text-sm font-display font-semibold text-foreground hover:border-primary/30 hover:shadow-soft transition-all"
-            >
-              {s.label}
-            </Link>
-          ))}
-        </div>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </div>
   );

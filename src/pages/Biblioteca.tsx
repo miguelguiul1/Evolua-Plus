@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Search, Leaf, Heart, Brain, Bone, Eye, Shield } from "lucide-react";
-import MotivationalQuote from "@/components/MotivationalQuote";
 
 type Alimento = {
   nome: string;
@@ -132,8 +131,6 @@ const Biblioteca = () => {
             Benefícios, vitaminas e ciência por trás de cada alimento
           </p>
         </div>
-
-        <MotivationalQuote />
 
         {/* Search */}
         <div className="mt-8 relative">

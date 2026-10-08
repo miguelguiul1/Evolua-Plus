@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { BookOpen, FlaskConical, Tag, Scale, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
-import MotivationalQuote from "@/components/MotivationalQuote";
 import MythChecker from "@/components/MythChecker";
 
 type Mito = {
@@ -113,8 +112,6 @@ const Educacao = () => {
             Conteúdo real, baseado em ciência, para você comer melhor
           </p>
         </div>
-
-        <MotivationalQuote />
 
         {/* Tabs */}
         <div className="mt-8 flex flex-wrap gap-2">

@@ -1,4 +1,4 @@
-import { Check, X, Sparkles } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { PLANS, formatPrice, planPrice, currencySymbol } from "@/config/plans";
@@ -75,15 +75,11 @@ const anual: PricingCard = {
 const plans = [gratuito, mensal, anual];
 
 const Pricing = () => (
-  <section id="planos" className="py-24 bg-secondary/40 relative overflow-hidden">
-    <div className="absolute inset-0 bg-mesh pointer-events-none" aria-hidden />
+  <section id="planos" className="py-14 relative overflow-hidden">
     <div className="container mx-auto max-w-6xl relative">
-      <div className="text-center max-w-2xl mx-auto mb-12">
-        <span className="inline-block mb-3 px-3 py-1 rounded-full bg-primary/10 text-primary font-display text-xs font-semibold tracking-wide uppercase">
+      <div className="max-w-2xl mx-auto mb-10">
+        <h2 className="font-display text-3xl font-semibold text-foreground">
           Planos
-        </span>
-        <h2 className="font-display text-3xl sm:text-5xl font-bold text-foreground">
-          Escolha o plano ideal para <span className="text-gradient-primary">sua evolução</span>
         </h2>
         <p className="mt-4 text-muted-foreground text-lg">
           Comece grátis. Faça upgrade quando quiser. Cancele quando quiser.
@@ -102,7 +98,7 @@ const Pricing = () => (
           >
             {p.badge && (
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full bg-primary text-primary-foreground text-xs font-display font-semibold px-3 py-1">
-                <Sparkles className="w-3 h-3" /> {p.badge}
+                {p.badge}
               </span>
             )}
             <h3 className="font-display text-xl font-bold text-foreground">{p.name}</h3>

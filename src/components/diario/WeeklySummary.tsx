@@ -49,7 +49,7 @@ const WeeklySummary = ({ entries, caloriesGoal, endDate }: Props) => {
               formatter={(v: number) => [`${v} kcal`, "Consumo"]}
             />
             <ReferenceLine y={caloriesGoal} stroke="hsl(var(--primary))" strokeDasharray="4 4" />
-            <Bar dataKey="kcal" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} maxBarSize={34} />
+            <Bar dataKey="kcal" fill="hsl(var(--muted-foreground) / 0.45)" radius={[6, 6, 0, 0]} maxBarSize={34} />
           </BarChart>
         </ResponsiveContainer>
       </div>

@@ -1,3 +1,4 @@
+import CabecalhoPagina from "@/components/feira/CabecalhoPagina";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -188,21 +189,7 @@ const AssistenteIA = () => {
   return (
     <main className="min-h-dvh pt-24 pb-12 bg-background">
       <div className="container mx-auto max-w-3xl">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-3">
-            <Sparkles className="w-3 h-3" /> Assistente inteligente
-          </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
-            Evolua Plus AI
-          </h1>
-          <p className="text-muted-foreground mt-2 text-sm">
-            Respostas rápidas e objetivas sobre alimentação, hábitos e uso da plataforma.
-          </p>
-          <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-muted-foreground bg-secondary/60 rounded-full px-3 py-1">
-            <ShieldCheck className="w-3 h-3" />
-            Conteúdo informativo — não substitui nutricionista ou médico.
-          </p>
-        </div>
+        <CabecalhoPagina titulo="Assistente" sobretitulo="Tire uma dúvida" apoio={<>Pergunte do jeito que falaria na cozinha. As respostas são informativas e não substituem nutricionista ou médico.</>} />
 
         {autoInsights.length > 0 && (
           <div className="mb-5 space-y-2">

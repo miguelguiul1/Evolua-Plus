@@ -16,9 +16,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Space Grotesk', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        body: ['DM Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        sans: ['DM Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
+        body: ['Atkinson Hyperlegible Next', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['Atkinson Hyperlegible Next', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       spacing: {
         "0.5": "0.125rem", "1": "0.25rem", "2": "0.5rem", "3": "0.75rem",

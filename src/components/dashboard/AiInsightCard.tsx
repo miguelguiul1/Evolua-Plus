@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Sparkles, X, ChevronRight, ShieldCheck } from "lucide-react";
+import { X, ChevronRight, ShieldCheck } from "lucide-react";
+import MarcadorIA from "@/components/feira/MarcadorIA";
 import { useAiInsights } from "@/hooks/useAiInsights";
 import { Button } from "@/components/ui/button";
 
@@ -8,32 +9,11 @@ const AiInsightCard = () => {
   const { loading, current, dismiss } = useAiInsights();
   const [open, setOpen] = useState(false);
 
-  if (loading)
-    return (
-      <div className="bg-card rounded-2xl shadow-soft border border-border/50 p-5 animate-pulse">
-        <div className="h-3 w-24 bg-secondary rounded mb-3" />
-        <div className="h-3 w-full bg-secondary rounded" />
-      </div>
-    );
-
-  if (!current)
-    return (
-      <div className="bg-card rounded-2xl shadow-soft border border-border/50 p-5 flex items-start gap-3">
-        <span className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-          <Sparkles className="w-4 h-4" />
-        </span>
-        <div>
-          <p className="font-display font-semibold text-sm text-foreground">Insight da IA</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Nada de novo por aqui. Continue registrando para receber análises personalizadas.
-          </p>
-        </div>
-      </div>
-    );
+  // Dica da IA fica em segundo plano: só aparece quando existe uma.
+  if (loading || !current) return null;
 
   return (
-    <div className="relative bg-card rounded-2xl shadow-soft border border-primary/20 p-5 overflow-hidden">
-      <span className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-primary to-accent" />
+    <div className="relative bg-card rounded-2xl border border-border p-5 overflow-hidden">
       <button
         onClick={() => dismiss.mutate(current)}
         aria-label="Ignorar insight"
@@ -43,11 +23,8 @@ const AiInsightCard = () => {
       </button>
 
       <div className="flex items-start gap-3">
-        <span className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-          <Sparkles className="w-4 h-4" />
-        </span>
         <div className="min-w-0 pr-6">
-          <p className="font-display font-semibold text-sm text-foreground">Insight da IA</p>
+          <p className="flex items-center gap-2 font-display font-semibold text-foreground">Uma dica para hoje <MarcadorIA /></p>
           <p className="text-sm text-foreground/80 mt-1 leading-relaxed">{current.message}</p>
 
           {open && (
